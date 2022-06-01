@@ -23,13 +23,16 @@ version := "1.0"
 
 
 // Want to use a published library in your project?
-// You can define other libraries as dependencies in your build like this:
+// You can define other libraries as dependencies in your build like this:]
+
 
 libraryDependencies += "org.scalameta" %% "scalameta" % "4.5.3"
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1"
 libraryDependencies += "com.github.scopt" %% "scopt" % "4.0.1"
 libraryDependencies += "org.scala-graph" %% "graph-core" % "1.13.4"
 libraryDependencies += "org.scala-graph" %% "graph-dot" % "1.13.3"
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.12"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12" % "test"
 
 assemblyMergeStrategy in assembly := {
  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
