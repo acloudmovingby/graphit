@@ -21,6 +21,7 @@ version := "1.0"
 // mostly only necessary if you intend to publish your library's binaries on a
 // place like Sonatype.
 
+unmanagedSources/excludeFilter := "islands-test.scala"
 
 // Want to use a published library in your project?
 // You can define other libraries as dependencies in your build like this:]
@@ -34,6 +35,7 @@ libraryDependencies += "org.scala-graph" %% "graph-dot" % "1.13.3"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.12"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12" % "test"
 
+// Helps "sbt assembly" work somehow...
 assemblyMergeStrategy in assembly := {
  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
  case x => MergeStrategy.first

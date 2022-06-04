@@ -8,7 +8,7 @@ import GraphBuilder.{CallGraph, createGraph, collectMethods}
 
 class GraphBuilderTests extends AnyFlatSpec {
 
-    def collectMethodsFromCode(code: String): CallGraph = {
+    def graphFromString(code: String): CallGraph = {
         val syntaxTree: Source = code.parse[Source].get
         createGraph(collectMethods(syntaxTree))
     }
@@ -16,7 +16,7 @@ class GraphBuilderTests extends AnyFlatSpec {
     behavior of "createGraph"
 
     it should "collect zero methods in code with no defs" in {
-        val result = collectMethodsFromCode("""object Foo { val x: Int = 5 }""")
+        val result = graphFromString("""object Foo { val x: Int = 5 }""")
         val nodes = List.empty[Method]
         val edges = List.empty[DiEdge[Method]]
         val expResult = Graph.from(nodes, edges)
@@ -25,8 +25,8 @@ class GraphBuilderTests extends AnyFlatSpec {
     }
 
     it should "collect one method if there is one def" in {
-        val result = collectMethodsFromCode("""object Foo { def foo() = "hello" }""")
-        val nodes = List(Method("foo", Some("Foo")))
+        val result = graphFromString("""object Foo { def foo() = "hello" }""")
+        val nodes = List(DefinedMethod("foo", Vector("Foo")))
         val edges = List.empty[DiEdge[Method]]
         val expResult = Graph.from(nodes, edges)
         assert(result.size == 1)
@@ -35,7 +35,7 @@ class GraphBuilderTests extends AnyFlatSpec {
     }
 
     it should "make an edge when a call is made to a def within the file parsed" in {
-        val result = collectMethodsFromCode(
+        val result = graphFromString(
             """
               |object Foo {
               | def foo() = { bar() }
@@ -43,8 +43,8 @@ class GraphBuilderTests extends AnyFlatSpec {
               |}
               |""".stripMargin)
         val (m1,  m2) = (
-            Method("foo", Some("Foo")),
-            Method("bar", Some("Foo"))
+            DefinedMethod("foo", Vector("Foo")),
+            DefinedMethod("bar", Vector("Foo"))
         )
         val nodes = List(m1, m2)
         val edges = List(m1 ~> m2)
@@ -56,15 +56,15 @@ class GraphBuilderTests extends AnyFlatSpec {
 
     it should "make an edge even if the method isn't within the file parsed" in {
         TestHelper.shouldPrint = true
-        val result = collectMethodsFromCode(
+        val result = graphFromString(
             """
               |object Foo {
               | def foo() = { bar() }
               |}
               |""".stripMargin)
         val (m1, m2) = (
-            Method("foo", Some("Foo")),
-            Method("bar", None)
+            DefinedMethod("foo", Vector("Foo")),
+            UnknownMethod("bar")
         )
         val nodes = List(m1, m2)
         val edges = List(m1 ~> m2)
@@ -73,4 +73,5 @@ class GraphBuilderTests extends AnyFlatSpec {
         assert(result.edges.size == 1)
         assert(result == expResult)
     }
+
 }

@@ -33,20 +33,12 @@ object GraphBuilder {
     }
 
     def collectMethods(tree: Source): List[MethodWithCallsites] = {
-        def recur(context: Option[String], tree: Tree): RecurContainer = {
+        def recur(context: Vector[String], tree: Tree): RecurContainer = {
 
-            def fold(context: Option[String], children: List[Tree]): RecurContainer =
+            def recurOnChildren(context: Vector[String], children: List[Tree]): RecurContainer =
                 children
                     .map(recur(context, _))
                     .fold(RecurContainer.empty)(_ ++ _)
-
-            def addToContext(context: Option[String], newThing: String): Option[String] =
-                Some(context.map(_ + ".").getOrElse("") + newThing)
-
-            def handleObjClassTrait(objClassTraitName: String, children: List[Tree]): RecurContainer = {
-                val newContext = addToContext(context, objClassTraitName)
-                fold(newContext, children)
-            }
 
             @tailrec
             def getCallSiteName(termApply: Term.Apply): String = termApply.fun match {
@@ -64,72 +56,34 @@ object GraphBuilder {
                 }
             }
 
-            /** Where the magic happens */
             tree match {
                 case method: Defn.Def =>
-                    val name = method.name.value
-                    val newContext = addToContext(context, name)
-                    val recurResult = fold(newContext, method.children)
+                    val recurResult = recurOnChildren(context :+ method.name.value, method.children)
                     // maybe useful later?: val position = (method.pos.start, method.pos.end)
                     val newMethod = MethodWithCallsites(
-                        Method(method.name.value, context),
+                        DefinedMethod(method.name.value, context),
                         recurResult.callsites.distinct)
                     RecurContainer(recurResult.methods ++ List(newMethod), List.empty)
                 case callSite: Term.Apply =>
                     val methodName = getCallSiteName(callSite)
-                    RecurContainer(List.empty, List(CallSite(methodName))) ++ fold(context, callSite.children)
-                case obj: Defn.Object => handleObjClassTrait(obj.name.value, obj.children)
-                case c: Defn.Class => handleObjClassTrait(c.name.value, c.children)
-                case t: Defn.Trait => handleObjClassTrait(t.name.value, t.children)
-                case _ => fold(context, tree.children)
+                    RecurContainer(List.empty, List(CallSite(methodName))) ++ recurOnChildren(context, callSite.children)
+                case obj: Defn.Object => recurOnChildren(context :+ obj.name.value, obj.children)
+                case c: Defn.Class => recurOnChildren(context :+ c.name.value, c.children)
+                case t: Defn.Trait => recurOnChildren(context :+ t.name.value, t.children)
+                case _ => recurOnChildren(context, tree.children)
             }
         }
 
-        recur(None, tree).methods
-    }
-
-    def dfs(tree: Source): List[TreeElem] = {
-        @tailrec
-        def getCallSiteName(termApply: Term.Apply): String = termApply.fun match {
-            case s: Term.Select => s.name.value // x.methodName(...)
-            case n: Term.Name => n.value // methodName(...)
-            case a: Term.ApplyType => a.fun match {
-                // a little silly to repeat what's above, but the Scalameta types make it awkward to avoid that
-                case s: Term.Select => s.name.value // x.methodName(...)
-                case n: Term.Name => n.value // methodName(...)
-            }
-            case ta: Term.Apply => getCallSiteName(ta)
-            case other => {
-                println(s"hmmm... didn't expect that a Term.Apply had something else in it. The 'fun' attribute in the Term.Apply is: $other whose type is ${other.getClass}")
-                "uhhhh, what?"
-            }
-        }
-
-        def recur(context: List[String], tree: Tree): List[TreeElem] = {
-            tree match {
-                case method: Defn.Def => method.children.flatMap {
-                        Method2(method.name.value, context) :: recur(method.name.value :: context, _)
-                    }
-                case callSite: Term.Apply =>
-                    CallSite(getCallSiteName(callSite)) :: callSite.children.flatMap(recur(context, _))
-                case obj: Defn.Object => obj.children.flatMap(recur(obj.name.value :: context, _))
-                case c: Defn.Class => c.children.flatMap(recur(c.name.value :: context, _))
-                case t: Defn.Trait => t.children.flatMap(recur(t.name.value :: context, _))
-                case _ => tree.children.flatMap(recur(context, _))
-            }
-        }
-        recur(Nil, tree)
+        recur(Vector.empty, tree).methods
     }
 
     def createGraph(methods: Seq[MethodWithCallsites]): CallGraph = {
         val immutMap = methods.map(_.method).groupBy(m => m.name)
         val nameMap: MutableMap[String, Seq[Method]] = MutableMap(immutMap.toSeq: _*)
-        if (TestHelper.shouldPrint) println(s"nameMap=$nameMap")
-        // (m1, callsites1), (m2, callsites2), (m3, callsites3)
         val edges = methods.flatMap { mc =>
             mc.callSites.flatMap { c =>
                 if (!nameMap.contains(c.name)) {
-                    nameMap.put(c.name, Seq(Method(c.name, None)))
+                    nameMap.put(c.name, Seq(DefinedMethod(c.name, Vector.empty)))
                 }
                 nameMap.get(c.name).get.map(mc.method ~> _) // TODO avoid using .get here
             }
@@ -137,9 +91,6 @@ object GraphBuilder {
 
 
         val nodes: Seq[Method] = nameMap.values.toSeq.flatten
-
-        if (TestHelper.shouldPrint) println(s"nodes=$nodes")
-
 
         Graph.from(nodes, edges)
     }
@@ -161,17 +112,11 @@ object GraphBuilder {
 
         g.toDot(root, edgeTransformer, iNodeTransformer = Some(nodeTransformer))
     }
-
-    def nameMap(methods: List[MethodWithCallsites]): Map[String, String] = methods.map { m =>
-        m.method.name -> m.method.context.getOrElse("")
-    }.toMap
 }
 
 object TestHelper {
     var shouldPrint: Boolean = false
 }
-
-trait TreeElem
 
 /** EXAMPLE **
  *
@@ -182,24 +127,34 @@ trait TreeElem
     }
  }
  *
- * * */
-
+ * *
+/** In the example snippet of code above, one `Method` could be Method("bar", List("Foo", "foo")) */
 case class Method(
-    name: String, // "bar"
-    context: Option[String] // "Foo.foo"; if definition not found in files searched, None
-) extends TreeElem
+    name: String, // name of def
+    /** Name of the def/object/class/trait this def is defined. If no definition can be found for it, it is emtpy*/
+    parents: Vector[String]
+)*/
 
-case class Method2(
+trait Method {
+    val name: String
+}
+
+case class UnknownMethod(
+    name: String
+) extends Method
+
+case class DefinedMethod(
     name: String,
-    context: List[String]
-) extends TreeElem
+    parents: Vector[String]
+    // TODO: file name
+) extends Method
 
 case class MethodWithCallsites(
     method: Method,
-    callSites: List[CallSite] // "run"
-) extends TreeElem
+    callSites: List[CallSite] // calls to other methods within this method
+)
 
-case class CallSite(name: String) extends TreeElem
+case class CallSite(name: String)
 
 /*
 
