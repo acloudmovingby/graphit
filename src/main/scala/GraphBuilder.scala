@@ -83,12 +83,11 @@ object GraphBuilder {
         val edges = methods.flatMap { mc =>
             mc.callSites.flatMap { c =>
                 if (!nameMap.contains(c.name)) {
-                    nameMap.put(c.name, Seq(DefinedMethod(c.name, Vector.empty)))
+                    nameMap.put(c.name, Seq(UnknownMethod(c.name)))
                 }
                 nameMap.get(c.name).get.map(mc.method ~> _) // TODO avoid using .get here
             }
         }
-
 
         val nodes: Seq[Method] = nameMap.values.toSeq.flatten
 

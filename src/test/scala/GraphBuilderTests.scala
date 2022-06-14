@@ -55,7 +55,6 @@ class GraphBuilderTests extends AnyFlatSpec {
     }
 
     it should "make an edge even if the method isn't within the file parsed" in {
-        TestHelper.shouldPrint = true
         val result = graphFromString(
             """
               |object Foo {

@@ -1,10 +1,12 @@
-import scala.meta._
-import GraphBuilder.{CallGraph, collectMethods, createGraph}
+import java.io.File
 import org.openide.util.NotImplementedException
 import org.scalatest.flatspec.AnyFlatSpec
-
-import java.io.File
 import scala.meta.Source
+import scala.meta._
+import scalax.collection.Graph
+import scalax.collection.GraphPredef.{EdgeAssoc, edgeSetToSeq}
+
+import GraphBuilder.{CallGraph, collectMethods, createGraph}
 
 class FilterTests extends AnyFlatSpec {
 
@@ -19,37 +21,35 @@ class FilterTests extends AnyFlatSpec {
         createGraph(collectMethods(syntaxTree))
     }
 
-    behavior of "matchesExcludedWord"
+    behavior of "matches"
 
     it should "return false if the exclusion list is empty" in {
-        assert(! Filters.matchesExcludedWord(List.empty)("test"))
+        assert(! Filters.matches(List.empty)("test"))
     }
 
     it should "return false if it doesn't match anything in the exclusion list" in {
-        assert(! Filters.matchesExcludedWord(List("foo"))("food"))
+        assert(! Filters.matches(List("foo"))("food"))
     }
 
-    it should "return true if it does match something in the exclusion list" in {
-        assert(Filters.matchesExcludedWord(List("foo*"))("food"))
-        assert(Filters.matchesExcludedWord(List("whatever", "food"))("food"))
-        assert(Filters.matchesExcludedWord(List("*oo*"))("food"))
-        assert(Filters.matchesExcludedWord(List("*"))("food"))
-        assert(Filters.matchesExcludedWord(List("*ood"))("food"))
+    it should "return true if it matches something in the exclusion list, including wildcards" in {
+        assert(Filters.matches(List("foo*"))("food"))
+        assert(Filters.matches(List("whatever", "food"))("food"))
+        assert(Filters.matches(List("*oo*"))("food"))
+        assert(Filters.matches(List("*"))("food"))
+        assert(Filters.matches(List("*ood"))("food"))
     }
 
-    behavior of "exclude"
+    behavior of "remove"
 
     it should "change nothing if the exclusion list is empty" in {
-        TestHelper.shouldPrint = true
         val graph = graphFromString(
             """
               |object Foo {
               | def foo() = bar()
               |}
               |""".stripMargin)
-        val newGraph = Filters.exclude(List.empty)(graph)
+        val newGraph = Filters.remove(List.empty)(graph)
         assert(graph == newGraph)
-        TestHelper.shouldPrint = false
     }
 
     it should "change nothing if the entity doesn't exist" in {
@@ -59,7 +59,7 @@ class FilterTests extends AnyFlatSpec {
               | def foo() = bar()
               |}
               |""".stripMargin)
-        val newGraph2 = Filters.exclude(List("apoenraora"))(graph)
+        val newGraph2 = Filters.remove(List("apoenraora"))(graph)
         assert(graph == newGraph2)
     }
 
@@ -73,14 +73,14 @@ class FilterTests extends AnyFlatSpec {
               |}
               |""".stripMargin
         )
-        val newGraph = Filters.exclude(List("f2"))(graph)
+        val newGraph = Filters.remove(List("f2"))(graph)
         assert(graph != newGraph)
         assert(newGraph.contains(DefinedMethod("f1", Vector("Foo"))))
         assert(! newGraph.contains(DefinedMethod("f2", Vector("Foo"))))
         assert(newGraph.contains(DefinedMethod("f3", Vector("Foo"))))
     }
 
-    it should "remove all methods in the class if a class is named" in {
+    it should "works with classes" in {
         val graph = graphFromString(
             """
               |class notDelete {
@@ -91,35 +91,66 @@ class FilterTests extends AnyFlatSpec {
               | def foo() = ()
               |}
               |""".stripMargin)
-        val newGraph = Filters.exclude(List("delete"))(graph)
+        val newGraph = Filters.remove(List("del*te"))(graph)
         assert(graph != newGraph)
         assert(! newGraph.contains(DefinedMethod("foo", Vector("delete"))))
         assert(newGraph.contains(DefinedMethod("foo", Vector("notDelete"))))
     }
 
-    it should "remove all methods in the trait if a trait is named" in {
-        throw new NotImplementedException()
-
+    it should "works with traits" in {
+        val graph = graphFromString(
+            """
+              |class notDelete {
+              | def foo() = ()
+              |}
+              |
+              |trait delete {
+              | def foo() = ()
+              |}
+              |""".stripMargin)
+        val newGraph = Filters.remove(List("del*te"))(graph)
+        assert(graph != newGraph)
+        assert(! newGraph.contains(DefinedMethod("foo", Vector("delete"))))
+        assert(newGraph.contains(DefinedMethod("foo", Vector("notDelete"))))
     }
 
-    it should "remove all methods in the object if the object is named" in {
-        throw new NotImplementedException()
-
+    it should "works with objects" in {
+        val graph = graphFromString(
+            """
+              |class notDelete {
+              | def foo() = ()
+              |}
+              |
+              |object delete {
+              | def foo() = ()
+              |}
+              |""".stripMargin)
+        val newGraph = Filters.remove(List("del*te"))(graph)
+        assert(graph != newGraph)
+        newGraph.nodes.map(_.toOuter.name)
+        assert(! newGraph.contains(DefinedMethod("foo", Vector("delete"))))
+        assert(newGraph.contains(DefinedMethod("foo", Vector("notDelete"))))
     }
 
-    it should "remove multiple methods" in {
-        throw new NotImplementedException()
-
-    }
-
-    it should "be able to remove a variety of methods, classes, objects" in {
-        throw new NotImplementedException()
-
-    }
-
-    it should "remove things with wildcards" in {
-        throw new NotImplementedException()
-
+    it should "be able to work with several removed words" in {
+        val graph = graphFromString(
+            """
+              |class notDelete {
+              | def foo() = ()
+              | def bar() = rock()
+              |}
+              |
+              |object delete {
+              | def foo() = rabbit()
+              | def rabbit() = dragon()
+              |}
+              |""".stripMargin)
+        val newGraph = Filters.remove(List("fo*", "ra**it", "rock"))(graph)
+        assert(graph != newGraph)
+        assert(newGraph.size == 2)
+        val nodeNames = newGraph.nodes.map(_.toOuter.name)
+        assert(nodeNames.contains("bar"))
+        assert(nodeNames.contains("dragon"))
     }
 
     behavior of "islands"
@@ -167,6 +198,97 @@ class FilterTests extends AnyFlatSpec {
         assert(newGraph.nodes.size == 3)
         assert(!newGraph.nodes.map(_.toOuter.name).contains("island"))
     }
+
+    behavior of "exclude"
+
+    def graphForExcludeTests: CallGraph = {
+        val edges = {
+            List("A" ->"B", "B" ->"C", "C" ->"D") ++ // A -> B -> C -> D
+                List("X" ->"Y", "Y" ->"Z") ++ // X -> Y -> Z
+                List("B" ->"Y", "Y" ->"D") // Both 'Y' and 'D' are connected to X, so they won't be excluded
+        } map { case (src, target) => UnknownMethod(src) ~> UnknownMethod(target)} // I think it's fine for them all to be Unknown?
+        Graph.from(List.empty, edges)
+    }
+
+
+    it should "remove nothing if the name given doesn't exist" in {
+        val graph = graphForExcludeTests
+        val excluded = Filters.exclude(List("whatever", "not there"))(graph)
+        assert(excluded.size == 14)
+        assert(graph == excluded)
+    }
+
+    it should "remove C if C is excluded" in {
+        val graph = graphForExcludeTests
+        val excludedA = Filters.exclude(List("C"))(graph)
+        assert(excludedA.size == 11)
+        assert(! excludedA.nodes.exists(_.toOuter.name == "C")) // C should no longer exist
+        assert(excludedA.nodes.exists(_.toOuter.name == "D")) // keeps D
+    }
+
+    it should "remove X if X is excluded" in {
+        val graph = graphForExcludeTests
+        val excludedA = Filters.exclude(List("X"))(graph)
+        assert(excludedA.size == 12)
+        assert(! excludedA.nodes.exists(_.toOuter.name == "X")) // X should no longer exist
+        assert(excludedA.nodes.exists(_.toOuter.name == "Y")) // keeps Y
+    }
+
+    it should "remove Z if Z is excluded" in {
+        val graph = graphForExcludeTests
+        val excludedA = Filters.exclude(List("Z"))(graph)
+        assert(excludedA.size == 12)
+        assert(! excludedA.nodes.exists(_.toOuter.name == "Z")) // Z should no longer exist
+    }
+
+    it should "remove D if D is excluded" in {
+        val graph = graphForExcludeTests
+        val excludedA = Filters.exclude(List("D"))(graph)
+        assert(excludedA.size == 11)
+        assert(! excludedA.nodes.exists(_.toOuter.name == "D")) // D should no longer exist
+    }
+
+    it should "remove B, C, and A if A is excluded" in {
+        val graph = graphForExcludeTests
+        val excludedA = Filters.exclude(List("A"))(graph)
+        assert(excludedA.size == 7)
+        assert(! excludedA.nodes.exists(_.toOuter.name == "A")) // A should no longer exist
+        assert(! excludedA.nodes.exists(_.toOuter.name == "B")) // nor B
+        assert(! excludedA.nodes.exists(_.toOuter.name == "C")) // nor C
+    }
+
+    it should "remove C, D, Y and Z if both C and Y are excluded" in {
+        val graph = graphForExcludeTests
+        val excludedA = Filters.exclude(List("C", "Y"))(graph)
+        assert(excludedA.size == 4)
+        assert(! excludedA.nodes.exists(_.toOuter.name == "C"))
+        assert(! excludedA.nodes.exists(_.toOuter.name == "D"))
+        assert(! excludedA.nodes.exists(_.toOuter.name == "Y"))
+        assert(! excludedA.nodes.exists(_.toOuter.name == "Z"))
+        // order shouldn't matter
+        val excludedB = Filters.exclude(List("Y", "C"))(graph)
+        assert(excludedB.size == 4)
+        assert(! excludedB.nodes.exists(_.toOuter.name == "C"))
+        assert(! excludedB.nodes.exists(_.toOuter.name == "D"))
+        assert(! excludedB.nodes.exists(_.toOuter.name == "Y"))
+        assert(! excludedB.nodes.exists(_.toOuter.name == "Z"))
+    }
+/*
+    it should "remove descendants who have the excluded method as their unique and only shared ancestor" in {
+        val graph = graphForExcludeTests
+        assert(graph.size == 14) // 7 nodes + 7 edges
+        assert(graph.nodes.exists(_.toOuter.name == "A")) // assert A exists first
+        val excludedA = Filters.exclude(List("A"))(graph)
+        assert(excludedA.size == 7) // now 4 nodes + 3 edges
+        assert(! excludedA.nodes.exists(_.toOuter.name == "A")) // A should no longer exist
+        assert(! excludedA.nodes.exists(_.toOuter.name == "B")) // nor B
+        assert(! excludedA.nodes.exists(_.toOuter.name == "C")) // nor C
+
+        val excludedB = Filters.exclude(List("B"))(graph)
+        assert(excludedB.size == 8)
+        assert(! excludedB.nodes.exists(_.toOuter.name == "B"))
+        assert(! excludedB.nodes.exists(_.toOuter.name == "C"))
+    }*/
 
     behavior of "fileOnly"
 

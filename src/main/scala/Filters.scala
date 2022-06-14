@@ -1,42 +1,60 @@
 import scala.util.matching.Regex
+import scala.collection.mutable.{Set => MutableSet}
+import scalax.collection.GraphTraversal.{BreadthFirst, DepthFirst}
+import GraphBuilder.{CallGraph, toDot}
 
-import GraphBuilder.CallGraph
+import scala.collection.mutable
 
 /** Functions of type CallGraph => CallGraph */
 object Filters {
 
     def wildcardsToRegex(glob: String): Regex = glob.replace("*","[^/]*").r
 
-    /** For example,'sc*a' would match 'scala' */
-    def matchesExcludedWord(excludedMethods: List[String])(str: String): Boolean =
-        excludedMethods
+    /** For example, List("sc*a")("scala") would return true because * is a wildcard, but List("scalla")("scala") would return false  */
+    def matches(strs: List[String])(s: String): Boolean =
+        strs
             .map(wildcardsToRegex)
-            .exists(_.matches(str))
+            .exists(_.matches(s))
 
-    def exclude(excludedMethods: List[String]): CallGraph => CallGraph =
+    def remove(removedMethods: List[String]): CallGraph => CallGraph =
+        graph => graph filter graph.having { node =>
+            val method = node.toOuter
+
+            def isRemoved(name: String): Boolean = matches(removedMethods)(name)
+            // remove methods whose names match or whose parent object/class/trait match
+            method match {
+                case UnknownMethod(name) => !isRemoved(name)
+                case DefinedMethod(name, parents) =>
+                    val removed = isRemoved(name) || parents.exists(isRemoved)
+                    !removed // if its not removed, then return true so we keep this node in the graph
+            }
+        }
+
+    // oof, don't ask me how this works, I somehow got the unit tests to pass
+    def exclude(strs: List[String]): CallGraph => CallGraph =
         graph => {
-            graph filter graph.having(node => {
-                val method = node.toOuter
-                val isExcluded: String => Boolean = matchesExcludedWord(excludedMethods)
-                // exclude matching methods and anything in the parents
-                method match {
-                    case UnknownMethod(name) => !isExcluded(name)
-                    case DefinedMethod(name, parents) =>
-                        val excluded = isExcluded(name) || parents.exists(isExcluded)
-                        !excluded // if its not excluded, then return true so we keep this node in the graph
+            val excluded: Seq[Method] = strs.foldLeft(MutableSet.empty[Method]){ case (set, str) =>
+                val regex = wildcardsToRegex(str)
+                val root = graph.nodes.find(n => regex.matches(n.toOuter.name))
+                val toExclude = MutableSet.empty[Method]
+                root.foreach { r =>
+                    r.withKind(BreadthFirst).foreach { node =>
+                        if (node.diPredecessors.forall(toExclude.contains)) toExclude.add(node)
+                    }
                 }
-        })
-    }
+                set ++ toExclude ++ root.map(_.toOuter).map(MutableSet(_)).getOrElse(MutableSet.empty)
+            }.toSeq
+            graph -- excluded
+        }
 
     val removeIslands: CallGraph => CallGraph =
-        graph => graph filter graph.having(n => {
-            val p = !n.isIsolated
-            if (TestHelper.shouldPrint) println(s"p=$p, n=${n.toOuter},")
-            p
-        })
+        graph => graph filter graph.having(!_.isIsolated)
 
-    def inFileOnly: CallGraph => CallGraph = graph => graph filter graph.having(_.toOuter match {
-        case _: DefinedMethod => true
-        case _: UnknownMethod => false
-    })
+    def inFileOnly: CallGraph => CallGraph =
+        graph => graph filter graph.having(n => {
+            n.toOuter match {
+                case _: DefinedMethod => true
+                case _: UnknownMethod => false
+            }
+        })
 }
