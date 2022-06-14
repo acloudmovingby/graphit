@@ -1,5 +1,5 @@
 import scala.util.matching.Regex
-import scala.collection.mutable.{Set => MutableSet}
+import scala.collection.mutable.{Set => MutableSet, Queue => MutableQueue}
 import scalax.collection.GraphTraversal.{BreadthFirst, DepthFirst}
 import GraphBuilder.{CallGraph, toDot}
 
@@ -8,9 +8,9 @@ import scala.collection.mutable
 /** Functions of type CallGraph => CallGraph */
 object Filters {
 
-    def wildcardsToRegex(glob: String): Regex = glob.replace("*","[^/]*").r
+    def wildcardsToRegex(glob: String): Regex = glob.replace("*", "[^/]*").r
 
-    /** For example, List("sc*a")("scala") would return true because * is a wildcard, but List("scalla")("scala") would return false  */
+    /** For example, List("sc*a")("scala") would return true because * is a wildcard, but List("scalla")("scala") would return false */
     def matches(strs: List[String])(s: String): Boolean =
         strs
             .map(wildcardsToRegex)
@@ -31,9 +31,9 @@ object Filters {
         }
 
     // oof, don't ask me how this works, I somehow got the unit tests to pass
-    def exclude(strs: List[String]): CallGraph => CallGraph =
+    def exclude2(strs: List[String]): CallGraph => CallGraph =
         graph => {
-            val excluded: Seq[Method] = strs.foldLeft(MutableSet.empty[Method]){ case (set, str) =>
+            val excluded: Seq[Method] = strs.foldLeft(MutableSet.empty[Method]) { case (set, str) =>
                 val regex = wildcardsToRegex(str)
                 val root = graph.nodes.find(n => regex.matches(n.toOuter.name))
                 val toExclude = MutableSet.empty[Method]
@@ -45,6 +45,26 @@ object Filters {
                 set ++ toExclude ++ root.map(_.toOuter).map(MutableSet(_)).getOrElse(MutableSet.empty)
             }.toSeq
             graph -- excluded
+        }
+
+    def exclude(strs: List[String]): CallGraph => CallGraph =
+        graph => {
+            var queue = MutableQueue.from {
+                strs.map(name => graph find (graph having (node = _.toOuter.name == name)))
+                    .filter(_.isDefined)
+                    .map(_.get.asInstanceOf[graph.NodeT].toOuter)
+            }
+
+            var newGraph = graph
+            while (queue.nonEmpty) {
+                val head = newGraph.get(queue.dequeue())
+                queue = queue ++ head.diSuccessors // children
+                    .filter(_.diPredecessors.size == 1) // that only have one parent
+                    .map(_.toOuter)
+                newGraph = newGraph - head.toOuter
+            }
+            
+            newGraph
         }
 
     val removeIslands: CallGraph => CallGraph =
