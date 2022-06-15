@@ -30,23 +30,6 @@ object Filters {
             }
         }
 
-    // oof, don't ask me how this works, I somehow got the unit tests to pass
-    def exclude2(strs: List[String]): CallGraph => CallGraph =
-        graph => {
-            val excluded: Seq[Method] = strs.foldLeft(MutableSet.empty[Method]) { case (set, str) =>
-                val regex = wildcardsToRegex(str)
-                val root = graph.nodes.find(n => regex.matches(n.toOuter.name))
-                val toExclude = MutableSet.empty[Method]
-                root.foreach { r =>
-                    r.withKind(BreadthFirst).foreach { node =>
-                        if (node.diPredecessors.forall(toExclude.contains)) toExclude.add(node)
-                    }
-                }
-                set ++ toExclude ++ root.map(_.toOuter).map(MutableSet(_)).getOrElse(MutableSet.empty)
-            }.toSeq
-            graph -- excluded
-        }
-
     def exclude(strs: List[String]): CallGraph => CallGraph =
         graph => {
             var queue = MutableQueue.from {
@@ -63,7 +46,7 @@ object Filters {
                     .map(_.toOuter)
                 newGraph = newGraph - head.toOuter
             }
-            
+
             newGraph
         }
 
