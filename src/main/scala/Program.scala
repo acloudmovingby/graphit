@@ -2,17 +2,13 @@ import CallGraph.CallGraph
 
 import java.io.File
 
-trait RunnableProgram {
-    def run(): Unit
-}
-
-case class DefaultProgram(
+case class Program(
     files: Seq[File],
     web: Boolean,
     removedMethods: List[String],
     excludedMethods: List[String],
     keepIslands: Boolean
-) extends RunnableProgram {
+) {
     def run(): Unit = {
         val graph: CallGraph = GraphBuilder.buildGraph(files)
             .filter(Filters.remove(removedMethods))
