@@ -1,11 +1,10 @@
 import scala.util.matching.Regex
-import scala.collection.mutable.{Set => MutableSet, Queue => MutableQueue}
+import scala.collection.mutable.Queue
 import scalax.collection.GraphTraversal.{BreadthFirst, DepthFirst}
-import GraphBuilder.{CallGraph, toDot}
-
 import scala.collection.mutable
 
-/** Functions of type CallGraph => CallGraph */
+import CallGraph.CallGraph
+
 object Filters {
 
     def wildcardsToRegex(glob: String): Regex = glob.replace("*", "[^/]*").r
@@ -16,48 +15,51 @@ object Filters {
             .map(wildcardsToRegex)
             .exists(_.matches(s))
 
-    def remove(removedMethods: List[String]): CallGraph => CallGraph =
-        graph => graph filter graph.having { node =>
-            val method = node.toOuter
-
+    def remove(removedMethods: List[String]): Def => Boolean =
+        method => {
             def isRemoved(name: String): Boolean = matches(removedMethods)(name)
             // remove methods whose names match or whose parent object/class/trait match
             method match {
-                case UnknownMethod(name) => !isRemoved(name)
-                case DefinedMethod(name, parents) =>
+                case UnknownDef(name) => !isRemoved(name)
+                case DefinedDef(name, parents) =>
                     val removed = isRemoved(name) || parents.exists(isRemoved)
                     !removed // if its not removed, then return true so we keep this node in the graph
             }
         }
 
+    def inFileOnly: Def => Boolean = {
+        case _: DefinedDef => true
+        case _: UnknownDef => false
+    }
+}
+
+/**
+ * Unlike Filters, these functions need access to the graph as a whole to get more context about whether to remove a
+ * node or not (e.g. to see how many parents a node has, etc.)
+ */
+object Transformers {
+    val removeIslands: CallGraph => CallGraph =
+        graph => graph.filter(node => graph.childrenOf(node).nonEmpty || graph.parentsOf(node).nonEmpty)
+
+
+    /** Similar to Filters.remove but removes descendants of the removed nodes as well (if they don't have non-removed ancestors) */
     def exclude(strs: List[String]): CallGraph => CallGraph =
         graph => {
-            var queue = MutableQueue.from {
-                strs.map(name => graph find (graph having (node = _.toOuter.name == name)))
-                    .filter(_.isDefined)
-                    .map(_.get.asInstanceOf[graph.NodeT].toOuter)
+            var queue = Queue.from {
+                graph.nodes.filter(n => strs.contains(n.name))
             }
 
-            var newGraph = graph
+            var g = graph
             while (queue.nonEmpty) {
-                val head = newGraph.get(queue.dequeue())
-                queue = queue ++ head.diSuccessors // children
-                    .filter(_.diPredecessors.size == 1) // that only have one parent
-                    .map(_.toOuter)
-                newGraph = newGraph - head.toOuter
+                val head = queue.dequeue()
+                // we do two things: (1) remove the method that is the head of the queue,
+                // then, (2) any children of that method with no other parents get added to the queue (and later will be removed as well)
+                queue = queue ++ g.childrenOf(head) // children
+                    .filter(g.parentsOf(_).size == 1) // that only have one parent
+                g = g - head
             }
 
-            newGraph
+            g
         }
 
-    val removeIslands: CallGraph => CallGraph =
-        graph => graph filter graph.having(!_.isIsolated)
-
-    def inFileOnly: CallGraph => CallGraph =
-        graph => graph filter graph.having(n => {
-            n.toOuter match {
-                case _: DefinedMethod => true
-                case _: UnknownMethod => false
-            }
-        })
 }

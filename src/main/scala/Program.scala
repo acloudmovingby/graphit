@@ -1,6 +1,4 @@
-import Filters.{exclude, inFileOnly, remove}
-import GraphBuilder.CallGraph
-import scalax.collection.Graph
+import CallGraph.CallGraph
 
 import java.io.File
 
@@ -9,21 +7,20 @@ trait RunnableProgram {
 }
 
 case class DefaultProgram(
-    files: Seq[File] = List.empty,
-    web: Boolean = false,
-    removedMethods: List[String] = List.empty,
-    excludedMethods: List[String] = List.empty,
-    hadDirectoryArgs: Boolean = false, // were there any directories amongst the arguments?
-    noIslands: Boolean = true
+    files: Seq[File],
+    web: Boolean,
+    removedMethods: List[String],
+    excludedMethods: List[String],
+    keepIslands: Boolean
 ) extends RunnableProgram {
     def run(): Unit = {
-        val graph: CallGraph = Some(GraphBuilder.buildGraph(files))
-            .map(remove(removedMethods))
-            .map(exclude(excludedMethods))
-            .map(inFileOnly)
-            .map(if (noIslands) Filters.removeIslands else identity)
-            .getOrElse(Graph.empty)
-        val dot = GraphBuilder.toDot(graph)
+        val graph: CallGraph = GraphBuilder.buildGraph(files)
+            .filter(Filters.remove(removedMethods))
+            .transform(Transformers.exclude(excludedMethods))
+            .filter(Filters.inFileOnly)
+            .transform(if (keepIslands) identity else Transformers.removeIslands)
+
+        val dot = graph.toDot("graphit", CallGraph.nodeLabeller)
         if (web) Web.open(dot) else println(dot)
     }
 }

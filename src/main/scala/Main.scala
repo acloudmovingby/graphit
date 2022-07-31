@@ -40,7 +40,7 @@ object Main extends App {
             .text("""Removes all the nodes that -r/--remove would, as well as all their descendants. Good for cleaning up overly messy graphs."""),
             opt[Unit]("no-islands")
                 .optional()
-                .action((_, c) => c.copy(noIslands = true))
+                .action((_, c) => c.copy(keepIslands = false))
                 .text("""Removes any `isolates` from the graph, i.e. methods which neither (1) make calls to other methods, nor (2) are called by other methods (within the file searched)."""),
             opt[Unit]('w',"web")
                 .action((_, c) => c.copy(web = true))
