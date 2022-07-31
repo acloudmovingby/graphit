@@ -61,7 +61,7 @@ If you're familiar with sbt, this should be pretty straightforward:
 2. Build all dependencies and bundle with program by running the command `sbt assembly`
 3. go into `target/scala-2.13 directory` and get then absolute path leading to the assembly .jar (maybe something like `graphit-assembly-*.*.jar`)
 4. Then make an alias in your .bashrc/.zshrc using the path to the assembly .jar:
-      ```alias graphit='(){ java -jar /Users/coates/Documents/code/graphit/graphit/target/scala-2.13/graphit-assembly-1.0.jar $1 ;}'```
+      ```alias graphit='(){ java -jar /path/to/graphit-assembly-1.0.jar $1 ;}'```
 5. Then you can run the program with simply the word `graphit` as shown in the examples above.
 (Note if you make changes to the repo, you'd have re-run sbt assembly, so it's recommended to use the sbt shell above if you're editing the repo)
   
