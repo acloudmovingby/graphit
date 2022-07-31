@@ -1,13 +1,22 @@
 # graphit
-Command line tool to help analyze call graphs in Scala files.
+A command line tool to extract and visualize call graphs from Scala source code. 
 
-## Basic Usage
-### Your first call graph using the DOT Format
-Let's run `graphit` on a simple Scala file (see the file itself [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala)
+Written in Scala. For people who use Scala. 
+
+## Introduction
+### Motivation
+`graphit` was born in the first year of acloudmovingby's career as a software engineer where he was fortunate enough to be working full-time with Scala. As blessed an existence as that was, real world production code--even code written in Scala--can get *narsty*. 
+
+As he spent hours poring over hundreds of Scala files, trying to figure out how they worked, how they talked to each other, how things would get triggered, the idea for `graphit` was born. What was needed was a way to visualize how all the pieces of Scala code connect. 
+
+From the beginning, the focus has been on adding features that help you comprehend large Scala codebases. If you'd like to contribute (and please do!), **it will help to be using `graphit` while working on other Scala projects**, especially new ones that you're just trying to figure out.
+
+### Basic usage: the DOT format
+Let's run `graphit` on a simple Scala file (file located [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala)) as follows:
 ```sh
-graphit /examples/example1.scala
+graphit example1.scala
 ```
-Which outputs:
+This outputs:
 ```
 digraph graphit {
 	sendMessage -> sendRequest
@@ -16,59 +25,63 @@ digraph graphit {
 	sendMessage -> makeHttpRequest
 }
 ```
-This is a representation of the call graph of that Scala code using the [DOT format](https://en.wikipedia.org/wiki/DOT_(graph_description_language). You can then pipe this output to other programs such as the CLI for [Graphviz](https://graphviz.org/). 
+This represents the call graph of that code using the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language). The DOT format is a standardized format to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
 
 ### Visualizing the graph
 While you could pipe the output to another program, it would be *way* cooler to see it immediately! Let's now run graphit with the `--web` flag:
 ```
-graphit --web /examples/example1.scala
+graphit --web example1.scala
 ```
-Which then will open the following image n your browser:
+Which then will open the following image in your browser:
 
 ![Visualization of the call graph of a Scala file](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.png?raw=true)
 
-Wow! Note, the GraphvizOnline tool is not affiliated with graphit, but because it's so useful, it's been bundled into graphit (please give thanks to the people over there maintaining that site!)
+Wow! This site will automatically run Graphviz for you in the browser. This site is not affilated with graphit, so be careful with using it with sensitive source code, but yeah, it's an awesome tool. Special thanks to [dreampuf](https://github.com/dreampuf/GraphvizOnline) who made that site!
 
-### Other Things You Can Do
+### Other Stuff Graphit Can Do
 
-* You can run it on any .scala file or directories that contain .scala files
-* You can exclude certain parts of the graph if it gets cluttered (see --remove and --exclude flags)
+* You can run it on one or more `.scala` files or directories that contain `.scala` files
+* You can exclude certain parts of the graph (see `--remove` and `--exclude` flags). Especially useful with '*' wildcard to clean up a messy graph.
 * Currently explores defs, but I hope to include val in the future (see TODO section)
-* Ignores "nested" def's, (i.e. a def within a def), since those tend to just be helper methods
-* Run with `--help` to learn more
+* Ignores "nested" def's, (i.e. a def within a def), since those tend to just be helper methods. Maybe a flag could be added to turn that off, but I honestly didn't find it useful.
+* Run with `--help` to see more!
 
 
 ## How to Install / Use:
+
+### Option 1: sbt shell
+If you're familiar with sbt, this should be pretty straightforward:
 1. clone repo
-2. Option 1: use sbt (must have sbt shell running)
-    - `cd` into repo
-    - run the command `sbt`
-    - Once in sbt shell, you can run graphit by doing `run ...`
-3. Option 2: make an alias (you can run with a single command)
-    - `cd` into repo
-    - Build all dependencies and bundle with program by doing `sbt assembly`
-    - go into target/scala-2.13 directory and get then absolute path leading to the assembly .jar (maybe something like `graphit-assembly-*.*.jar`)
-    - then make an alias in your .bashrc/.zshrc using the path to the assembly .jar
+2. start sbt shell by running `sbt`
+3. Enter `run` followed by the args/flags
+4. Enter `test` to run the test suite.
+
+### Option 2: single command
+1. clone repo
+2. Build all dependencies and bundle with program by running the command `sbt assembly`
+3. go into `target/scala-2.13 directory` and get then absolute path leading to the assembly .jar (maybe something like `graphit-assembly-*.*.jar`)
+4. Then make an alias in your .bashrc/.zshrc using the path to the assembly .jar:
       ```alias graphit='(){ java -jar /Users/coates/Documents/code/graphit/graphit/target/scala-2.13/graphit-assembly-1.0.jar $1 ;}'```
-    - run the program simply using the command `graphit <arg1>, <arg2>....`
+5. Then you can run the program with simply the word `graphit` as shown in the examples above.
+(Note if you make changes to the repo, you'd have re-run sbt assembly, so it's recommended to use the sbt shell above if you're editing the repo)
   
 ## Development
 ### Third party tools
 These are some of the awesome tools that help graphit work: 
-* [Scopt] to parse arguments
-* [Scalameta] to parse Scala code into abstract syntax trees (ASTs).
-* [Graphs for Scala] (i.e. scalax) to handle graph operations. I (Chris) have used graph libraries in Rust, Java, and Scala, and this one is the best! That being said, like all graph libraries, it's API is quite complex because graphs are very general mathematical structures. I had a lot of boilerplate scalax code in graphit and I knew it might discourage others/myself from contributing, so I made a light wrapper Graph class around the scalax library, and I may discard the scalax library entirely in the future.
+* [Scopt](https://github.com/scopt/scopt) to parse the arguments/flags
+* [Scalameta](https://scalameta.org/docs/trees/guide.html) to parse Scala code into abstract syntax trees (ASTs).
+* [Graphs for Scala](https://www.scala-graph.org/) (i.e. scalax) to handle graph operations. I (acloudmovingby) have used graph libraries in Rust, Java, and Scala, and this one is the best! That being said, like all graph libraries, it's API is quite complex because graphs are very general mathematical structures. I had a lot of boilerplate scalax code in graphit and I knew it might discourage others/myself from contributing, so I made a light wrapper Graph class around the scalax library, and I may discard the scalax library entirely in the future.
 
 ### POSSIBLE TO-DO:
 In no particular priority: 
 * Don't just look at `def`'s but also at `val`'s. 
 * Make this tool available via apt-get, homebrew, etc.
 * Make flag to show all method/functions in graph, including those whose definitions were never found in the files. (It's very verbose to do this because it would show all the .map and .toString and such, but it might be useful)
-* Make flag to show class names with methods
+* Make flag to show class names with methods. Surprisingly, even though people mention this a lot, I have not found it useful since it's usually not hard to figure out what method a node is referring to. Adding the full classname clutters the image, but people might want it...
 * Make flag to find path(s) between two methods.
 * Make flag to show all paths between two files.
 * Make flag to show all parent callers, up to a certain depth or something so it's reasonable to run on a huge codebase.
 * Make flag to show all descendants, up to a certain depth.
 * Improve efficiency when looking at large codebases by reading files and running algorithms in a more `online` way, i.e. not waiting to read all files and build the whole graph if a given flag command doesn't need it (???)
-* (HARD) Make flag to group methods by their classes and/or files. In DOT format terms, I'd probably use the `subgraph` keyword to group methods that are all in the same class/object/trait. The trick is getting this to work ;) 
-* (HARD) Make this actually use a compiler to check types rather than just using reflection and string equality (currently graphit cannot know the diffrence between two methods with the same name, e.g. it will think `ObjectA.foo()` is calling the same method as `ObjectB.foo()`. Obviously people have devised ways to avoid this, but in discussion with others it appears I may need to write my own compiler plugin. 
+* (MEDIUM) Make flag to group methods by their classes and/or files. In DOT format terms, I'd probably use the `subgraph` keyword to group methods that are all in the same class/object/trait. The trick is getting this to work
+* (HARD) Make this actually use a compiler to check types rather than just using reflection and string equality (currently graphit cannot know the difference between two methods with the same name, e.g. it will think `ObjectA.foo()` is calling the same method as `ObjectB.foo()`. Obviously people have devised ways to avoid this, but in discussion with others it appears I may need to write my own compiler plugin. 
