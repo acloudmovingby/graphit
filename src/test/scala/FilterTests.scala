@@ -150,7 +150,6 @@ class FilterTests extends AnyFlatSpec {
               |""".stripMargin)
         val newGraph = Filters.remove(List("del*te"))(graph)
         assert(graph != newGraph)
-        newGraph.nodes.map(_.toOuter.name)
         assert(! newGraph.contains(DefinedMethod("foo", Vector("delete"))))
         assert(newGraph.contains(DefinedMethod("foo", Vector("notDelete"))))
     }

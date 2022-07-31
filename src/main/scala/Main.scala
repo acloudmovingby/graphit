@@ -27,29 +27,32 @@ object Main extends App {
                     if (f.isDirectory || f.getName.endsWith("scala")) success
                     else failure("Arguments must be *.scala files, or directories containing *.scala files (directories searched recursively).")),
             opt[Seq[String]]('r', "remove")
-                .valueName("<name1>,<name2>...")
+                .valueName("<s1>,<s2>,...")
                 .unbounded()
                 .optional()
                 .action((pattern, c) => c.copy(removedMethods = c.removedMethods ++ pattern))
-            .text("""Removes from the graph anything matching the given names. This includes methods, classes, traits, or objects. Accepts the `*` character as wildcard. To remove connected nodes, see -e/--exclude."""),
+            .text("""If s1 is "foo", then this removes from the final graph any methods named "foo", or methods which live in a class/object/trait named "foo". Accepts the `*` character as wildcard. Also see -e/--exclude."""),
             opt[Seq[String]]('e', "exclude")
-            .valueName("<name1>,<name2>...")
+            .valueName("<s1>,<s2>...")
             .unbounded()
             .optional()
-            .action((pattern, c) => c.copy(excludedMethods = c.excludedMethods ++ pattern)),
+            .action((pattern, c) => c.copy(excludedMethods = c.excludedMethods ++ pattern))
+            .text("""Removes all the nodes that -r/--remove would, as well as all their descendants. Good for cleaning up overly messy graphs."""),
             opt[Unit]("no-islands")
                 .optional()
                 .action((_, c) => c.copy(noIslands = true))
                 .text("""Removes any `isolates` from the graph, i.e. methods which neither (1) make calls to other methods, nor (2) are called by other methods (within the file searched)."""),
             opt[Unit]('w',"web")
                 .action((_, c) => c.copy(web = true))
-                .text("Automatically opens your web browser to show a visualization of your graph using an open source website version of Graphviz (website is unaffiliated with graphit and I accept no liability for whatever you upload to it. https://github.com/dreampuf/GraphvizOnline)"),
+                .text("Opens the website GraphvizOnline (https://github.com/dreampuf/GraphvizOnline) to show a visualization of your graph. Graphit is unaffiliated with ."),
             opt[Seq[String]]('p', "path")
                 .optional()
                 .validate(f =>
                     if (f.size == 2) success
                     else failure("Path flag requires exactly two scala def's. For example, 'graphit -c getId fetchIds <dir>' searches the given directory to find any method/function named 'getId' and 'fetchIds', and then shows all paths between those two methods."))
                 .text("Shows any paths between the two methods, i.e. is one a descendant call of the other."),
+            note(sys.props("line.separator")),
+            help("help").text("prints this usage text"),
             // checkConfig checks for consistency of the whole Config (e.g. to prevent contradictory flags)
             checkConfig {
                 case c if c.files.isEmpty =>
