@@ -85,8 +85,9 @@ In no particular priority:
 * Make flag to show all paths between two files.
 * Make flag to show all parent callers, up to a certain depth or something so it's reasonable to run on a huge codebase.
 * Make flag to show all descendants, up to a certain depth.
+* Make output title of graph be file or directory names?
 * Improve efficiency when looking at large codebases by reading files and running algorithms in a more `online` way, i.e. not waiting to read all files and build the whole graph if a given flag command doesn't need it (???)
 * (MEDIUM) Make flag to group methods by their classes and/or files. In DOT format terms, I'd probably use the `subgraph` keyword to group methods that are all in the same class/object/trait. The trick is getting this to work
-* **(HARD but arguably most important)** Make this actually use a compiler to check types rather than just using reflection and string equality (currently graphit cannot know the difference between two methods with the same name, e.g. it will think `ObjectA.foo()` is calling the same method as `ObjectB.foo()`. There's a rumor we would need to write my own compiler plugin. 
+* **(HARD but arguably most important)** Make this actually use a compiler to check types rather than just using reflection and string equality (currently graphit cannot know the difference between two methods with the same name, e.g. it will think `ObjectA.foo()` is calling the same method as `ObjectB.foo()`. Heard that we'd possibly need to write my own compiler plugin. 
 
 
