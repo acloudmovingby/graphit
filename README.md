@@ -28,7 +28,7 @@ digraph graphit {
 This represents the call graph of that code using the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language). The DOT format is a standardized format to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
 
 ### Visualizing the graph
-While you could pipe the output to another program, it would be *way* cooler to see it immediately! Let's now run graphit with the `--web` flag:
+While you could do as described above, it would be *way* cooler to see it immediately! Let's now run graphit with the `--web` flag:
 ```
 graphit --web example1.scala
 ```
@@ -41,7 +41,7 @@ Wow! This site will automatically run Graphviz for you in the browser. This site
 ### Other Stuff Graphit Can Do
 
 * You can run it on one or more `.scala` files or directories that contain `.scala` files
-* You can exclude certain parts of the graph (see `--remove` and `--exclude` flags). Especially useful with '*' wildcard to clean up a messy graph.
+* You can exclude certain parts of the graph (see `--remove` and `--exclude` flags in help text). Accepts `*` as a wildcard. Useful for cleaning up large graphs, or for taking screenshots.
 * Currently explores defs, but I hope to include val in the future (see TODO section)
 * Ignores "nested" def's, (i.e. a def within a def), since those tend to just be helper methods. Maybe a flag could be added to turn that off, but I honestly didn't find it useful.
 * Run with `--help` to see more!
@@ -84,4 +84,4 @@ In no particular priority:
 * Make flag to show all descendants, up to a certain depth.
 * Improve efficiency when looking at large codebases by reading files and running algorithms in a more `online` way, i.e. not waiting to read all files and build the whole graph if a given flag command doesn't need it (???)
 * (MEDIUM) Make flag to group methods by their classes and/or files. In DOT format terms, I'd probably use the `subgraph` keyword to group methods that are all in the same class/object/trait. The trick is getting this to work
-* (HARD) Make this actually use a compiler to check types rather than just using reflection and string equality (currently graphit cannot know the difference between two methods with the same name, e.g. it will think `ObjectA.foo()` is calling the same method as `ObjectB.foo()`. Obviously people have devised ways to avoid this, but in discussion with others it appears I may need to write my own compiler plugin. 
+* **(HARD but arguably most important)** Make this actually use a compiler to check types rather than just using reflection and string equality (currently graphit cannot know the difference between two methods with the same name, e.g. it will think `ObjectA.foo()` is calling the same method as `ObjectB.foo()`. Obviously people have devised ways to avoid this, but in discussion with others it appears I may need to write my own compiler plugin. 
