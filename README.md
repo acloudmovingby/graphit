@@ -30,7 +30,7 @@ Which then will open the following image in your browser:
 
 ![Visualization of the call graph of a Scala file](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.png?raw=true)
 
-Wow! This site will automatically run Graphviz for you in the browser. This site is not affilated with graphit, so be careful with using it with sensitive source code, but yeah, it's an awesome tool. [See more](https://github.com/dreampuf/GraphvizOnline)
+Wow! This site will automatically run Graphviz for you in the browser. This site is not affilated with graphit, so be careful with using it with sensitive source code, but yeah, it's an awesome tool. ([site](https://dreampuf.github.io/GraphvizOnline/), [github](https://github.com/dreampuf/GraphvizOnline))
 
 ### Other Stuff Graphit Can Do
 
