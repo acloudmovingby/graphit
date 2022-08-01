@@ -6,7 +6,7 @@ Written in Scala, for exploring large Scala codebases.
 ## Introduction
 
 ### Basic usage: the DOT format
-Let's run `graphit` on a simple Scala file (file located [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala)) as follows:
+Run `graphit` on a simple Scala file (file located [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala)) as follows:
 ```sh
 graphit example1.scala
 ```
@@ -22,7 +22,7 @@ digraph graphit {
 This represents the call graph of that code using the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language). The DOT format is a standardized format to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
 
 ### Visualizing the graph
-While you could do as described above, it would be *way* cooler to see it immediately! Now run graphit with the `--web` flag:
+It would be *way* cooler to see it immediately! Run graphit with the `--web` flag:
 ```
 graphit --web example1.scala
 ```
@@ -30,7 +30,7 @@ Which then will open the following image in your browser:
 
 ![Visualization of the call graph of a Scala file](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.png?raw=true)
 
-Wow! This site will automatically run Graphviz for you in the browser. This site is not affilated with graphit, so be careful with using it with sensitive source code, but yeah, it's an awesome tool. ([site](https://dreampuf.github.io/GraphvizOnline/), [github](https://github.com/dreampuf/GraphvizOnline))
+Neat! This site will automatically run Graphviz for you in the browser. This site is not affilated with graphit, so like be careful with using it with sensitive source code, but yeah, it's an awesome tool. ([site](https://dreampuf.github.io/GraphvizOnline/), [github](https://github.com/dreampuf/GraphvizOnline))
 
 ### Other Stuff Graphit Can Do
 
