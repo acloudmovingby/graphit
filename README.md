@@ -74,8 +74,7 @@ For any comments/suggestions, feel free to open an issue or send a message to Gi
 If you'd like to contribute, **it will help to be using `graphit` while working on other Scala projects**, especially new ones that you're just trying to figure out*
 
 ### POSSIBLE TO-DO:
-
-In no particular priority: 
+This is just a random mix of ideas, probably shouldn't / won't do a lot of them: 
 * Don't just look at `def`'s but also at `val`'s. 
 * (HARD) make into an IDE plugin, maybe with a GUI?
 * Make this tool available via apt-get, homebrew, etc.?
