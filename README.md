@@ -63,7 +63,7 @@ If you're familiar with sbt, this should be pretty straightforward:
 
 ### Motivation
 
-*acloudmovingby*: `graphit` was born in the first year of my career as a software engineer where I was fortunate enough to be working full-time with Scala. As blessed an existence as that was, real world production code--even code written in Scala--can get a bit *narsty*. I had to spend a lot of time trying to figure out how files worked, how they talked to each other, how things could get triggered...From the beginning. I've been interested in adding features that help in comprehending large Scala codebases. 
+This project was started by *acloudmovingby* who is a software engineer working full-time with Scala. As blessed an existence as that is, real world production code--even in Scala--can get darn complicated. The hope for this tool is spend less time trying to figure out how files worked, how they talk to each other, how things can get triggered, etc.
 
 If you'd like to contribute (and please do!), **it will help to be using `graphit` while working on other Scala projects**, especially new ones that you're just trying to figure out*
 
