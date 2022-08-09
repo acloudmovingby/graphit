@@ -82,8 +82,8 @@ This is just a random mix of ideas, probably shouldn't / won't do a lot of them:
 * Make flag to show class names with methods. Surprisingly, even though people mention this a lot, I have not found it useful since it's usually not hard to figure out what method a node is referring to. Adding the full classname clutters the image, but people might want it...
 * Make flag to find path(s) between two methods.
 * Make flag to show all paths between two files.
-* Make flag to show all parent callers, up to a certain depth or something so it's reasonable to run on a huge codebase.
-* Make flag to show all descendants, up to a certain depth.
+* Make flag to show all *parent* callers, up to a certain depth or something so it's reasonable to run on a huge codebase.
+* Same as the previous bullet point, but make flag to show all *descendants*, up to a certain depth.
 * Make output title of graph be file or directory names?
 * Improve efficiency when looking at large codebases by reading files and running algorithms in a more `online` way, i.e. not waiting to read all files and build the whole graph if a given flag command doesn't need it (???)
 * (HARD) Make flag to group methods by their classes and/or files. In DOT format terms, I'd probably use the `subgraph` keyword to group methods that are all in the same class/object/trait. The trick is getting this to work
