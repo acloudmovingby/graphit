@@ -6,7 +6,7 @@ Written in Scala, for exploring large Scala codebases.
 ## Introduction
 
 ### Basic usage: the DOT format
-Run `graphit` on a simple Scala file as follows:
+Let's say we've set up `graphit` on the command line (instructions below) and we run `graphit` on the Scala file `example1.scala` as follows:
 ```sh
 graphit example1.scala
 ```
@@ -19,16 +19,16 @@ digraph graphit {
 	sendMessage -> makeHttpRequest
 }
 ```
-This represents the 'call graph' of that file. Each arrow (`A -> B`) means that within the code block of function/method `A`, there is a call to function/method `B`. If you look at the example file [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala), you'll see that the method `sendMessage` makes a call to the method `sendRequest`, which in turn makes a call to 'getClient' and so on. 
+What are we seeing? This represents the 'call graph' of that file. Each arrow (`A -> B`) indicates that within the code block of function/method `A`, there is a call to function/method `B`. If you look at the example file [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala), you'll see that the method `sendMessage` makes a call to the method `sendRequest`, which in turn makes a call to 'getClient' and so on. 
 
-What is the structure of this output? The output is in the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language), a standardized format to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
+Why is the output of `graphit` formatted in this way? The output is in the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language), a standardized format to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
 
 ### Visualizing the graph
-It would be *way* cooler to see it immediately! Run graphit with the `--web` flag:
+But wait, seeing a graph as a DOT format is still a little unintuitive. It would be *way* cooler to see it immediately! So let's run graphit with the `--web` flag:
 ```
 graphit --web example1.scala
 ```
-Which then will open the following image in your browser:
+This then opens the following image in your browser:
 
 ![Visualization of the call graph of a Scala file](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.png?raw=true)
 
