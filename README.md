@@ -73,16 +73,6 @@ For any comments/suggestions, feel free to open an issue or send a message to Gi
 
 If you'd like to contribute, **it will help to be using `graphit` while working on other Scala projects**, especially new ones that you're just trying to figure out*
 
-### Motivation
-This project was started by *acloudmovingby* who is a software engineer working full-time with Scala. As blessed an existence as that is, real world production code--even in Scala--can get darn complicated. The hope for this tool is spend less time trying to figure out how files worked, how they talk to each other, how things can get triggered, etc.
-
-
-### Third party tools
-These are some great tools that help graphit work: 
-* [Scopt](https://github.com/scopt/scopt) to parse the arguments/flags
-* [Scalameta](https://scalameta.org/docs/trees/guide.html) to parse Scala code into abstract syntax trees (ASTs).
-* [Graphs for Scala](https://www.scala-graph.org/) (i.e. scalax) to handle graph operations. I (@acloudmovingby) used graph libraries in Rust, Java, and Scala, and I think this is my favorite so far. That being said, like all graph libraries, it's API is quite complex because graphs are very general mathematical structures. I had a lot of boilerplate scalax code in graphit and I knew it might discourage others/myself from contributing, so I made a light wrapper Graph class around the scalax library. Might discard the scalax library entirely in the future.
-
 ### POSSIBLE TO-DO:
 
 In no particular priority: 
@@ -100,5 +90,15 @@ In no particular priority:
 * (HARD) Make flag to group methods by their classes and/or files. In DOT format terms, I'd probably use the `subgraph` keyword to group methods that are all in the same class/object/trait. The trick is getting this to work
 * (MEDIUM) Same as above, but insteqad of grouping them, I think it's easier to just color them. Perhaps different shades represent different files and shades of color represent different classes within that file??
 * **(HARD but arguably most important)** Make this actually use a compiler to check types rather than just using reflection and string equality (currently graphit cannot know the difference between two methods with the same name, e.g. it will think `ObjectA.foo()` is calling the same method as `ObjectB.foo()`. Heard that we'd possibly need to write my own compiler plugin. 
+
+### Motivation
+This project was started by *acloudmovingby* who is a software engineer working full-time with Scala. As blessed an existence as that is, real world production code--even in Scala--can get darn complicated. The hope for this tool is spend less time trying to figure out how files worked, how they talk to each other, how things can get triggered, etc.
+
+
+### Third party tools
+These are some great tools that help graphit work: 
+* [Scopt](https://github.com/scopt/scopt) to parse the arguments/flags
+* [Scalameta](https://scalameta.org/docs/trees/guide.html) to parse Scala code into abstract syntax trees (ASTs).
+* [Graphs for Scala](https://www.scala-graph.org/) (i.e. scalax) to handle graph operations. I (@acloudmovingby) used graph libraries in Rust, Java, and Scala, and I think this is my favorite so far. That being said, like all graph libraries, it's API is quite complex because graphs are very general mathematical structures. I had a lot of boilerplate scalax code in graphit and I knew it might discourage others/myself from contributing, so I made a light wrapper Graph class around the scalax library. Might discard the scalax library entirely in the future.
 
 
