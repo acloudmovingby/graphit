@@ -46,30 +46,36 @@ Note: Because this site is not affilated with graphit, be mindful of using it wi
 
 
 ## How to Install / Use:
+You need to have sbt installed.
 
 ### Option 1: sbt shell
-If you're familiar with sbt, this should be pretty straightforward:
+This is probably the best way (meaning, it will work), but it's a little more clunky. If you're familiar with sbt, this should be pretty straightforward:
 1. clone repo
 2. start sbt shell by running `sbt`
 3. Enter `run` followed by the args/flags
 4. Enter `test` to run the test suite.
 
 ### Option 2: single command
-1. clone repo
+If you do this, you can run graphit as shown in the examples above with just the command 'graphit'
+1. clone repo; cd into it
 2. Build all dependencies and bundle with program by running the command `sbt assembly`
 3. go into `target/scala-2.13 directory` and get then absolute path leading to the assembly .jar (maybe something like `graphit-assembly-*.*.jar`)
-4. Then make an alias in your .bashrc/.zshrc using the path to the assembly .jar:
+4. Then make an alias in your .bashrc/.zshrc using the path to the assembly .jar as follows:
       ```alias graphit='(){ java -jar /path/to/graphit-assembly-1.0.jar $1 ;}'```
 5. Then you can run the program with simply the word `graphit` as shown in the examples above.
-(Note if you make changes to the repo, you'd have re-run sbt assembly, so it's recommended to use the sbt shell above if you're editing the repo)
+(Note if you make changes to the repo, you'd have to re-run `sbt assembly`, so it's easier to use the sbt shell above if you're working on edits to the repo)
   
 ## Development
 
-### Motivation
+CONTRIBUTORS WELCOME
 
+For any comments/suggestions, feel free to open an issue or send a message to Github user *acloudmovingby*
+
+If you'd like to contribute, **it will help to be using `graphit` while working on other Scala projects**, especially new ones that you're just trying to figure out*
+
+### Motivation
 This project was started by *acloudmovingby* who is a software engineer working full-time with Scala. As blessed an existence as that is, real world production code--even in Scala--can get darn complicated. The hope for this tool is spend less time trying to figure out how files worked, how they talk to each other, how things can get triggered, etc.
 
-If you'd like to contribute (and please do!), **it will help to be using `graphit` while working on other Scala projects**, especially new ones that you're just trying to figure out*
 
 ### Third party tools
 These are some great tools that help graphit work: 
