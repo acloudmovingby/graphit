@@ -19,7 +19,7 @@ digraph graphit {
 	sendMessage -> makeHttpRequest
 }
 ```
-Each arrow (`A -> B`) indicates that within the code block of function/method `A`, there is a call to function/method `B`. If you look at the example file [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala), you'll see that the method `sendMessage` makes a call to the method `sendRequest`, which in turn makes a call to 'getClient' and so on. 
+Each arrow (`A -> B`) indicates that within the code block of function/method `A`, there is a call to function/method `B`. If you look at the example file [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala), you'll see that the method `sendMessage` makes a call to the method `sendRequest`, which in turn makes a call to `getClient` and so on. 
 
 This so-called 'call graph' of the code, is represented in the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language), a standardized way to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
 
