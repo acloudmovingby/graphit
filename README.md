@@ -6,7 +6,7 @@ Written in Scala, for exploring large Scala codebases.
 ## Introduction
 
 ### Basic usage: the DOT format
-Run `graphit` on a simple Scala file (file located [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala)) as follows:
+Run `graphit` on a simple Scala file as follows:
 ```sh
 graphit example1.scala
 ```
@@ -19,7 +19,9 @@ digraph graphit {
 	sendMessage -> makeHttpRequest
 }
 ```
-This represents the call graph of that code using the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language). The DOT format is a standardized format to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
+This represents the 'call graph' of that file. Each arrow (`A -> B`) means that within the code block of function/method `A`, there is a call to function/method `B`. If you look at the example file [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala), you'll see that the method `sendMessage` makes a call to the method `sendRequest`, which in turn makes a call to 'getClient' and so on. 
+
+What is the structure of this output? The output is in the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language), a standardized format to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
 
 ### Visualizing the graph
 It would be *way* cooler to see it immediately! Run graphit with the `--web` flag:
