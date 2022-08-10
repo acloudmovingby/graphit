@@ -11,7 +11,10 @@ case class Config(
     keepIslands: Boolean = true
 ) {
     /** TODO Return as Either? Left if not possible to make a valid program from the args/flags*/
-    def getProgram(): Program = Program(files, web, removedMethods, excludedMethods, keepIslands)
+    def generateProgram(): RunnableProgram = Default(Files(files), removedMethods, excludedMethods, keepIslands)
+
+
+
 
     // run program and pattern match on output and web,
 }

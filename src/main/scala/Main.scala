@@ -66,6 +66,7 @@ object Main extends App {
     // config with that config, which is hopefully in a valid state
     OParser.parse(parser1, args, Config()) match {
         case None => println(s"There was an error during parsing of the arguments. Sorry...")
-        case Some(config) => config.getProgram().run()
+        case Some(config) if config.web => config.generateProgram().runWeb()
+        case Some(config) => config.generateProgram().run()
     }
 }

@@ -1,15 +1,8 @@
 import org.scalatest.flatspec.AnyFlatSpec
-import scala.meta._
 
-import GraphBuilder.{createGraph, collectMethods}
-import CallGraph.CallGraph
+import GraphGenerators.graphFromString
 
 class GraphBuilderTests extends AnyFlatSpec {
-
-    def graphFromString(code: String): CallGraph = {
-        val syntaxTree: Source = code.parse[Source].get
-        createGraph(collectMethods(syntaxTree))
-    }
 
     behavior of "createGraph"
 

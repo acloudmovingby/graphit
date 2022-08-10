@@ -1,25 +1,9 @@
-import java.io.File
-import org.openide.util.NotImplementedException
 import org.scalatest.flatspec.AnyFlatSpec
 
-import scala.meta.Source
-import scala.meta._
-
-import GraphBuilder.{collectMethods, createGraph}
 import CallGraph.CallGraph
+import GraphGenerators.{graphFromString, graphFromTestFile}
 
 class FilterTests extends AnyFlatSpec {
-
-    def graphFromFile(fileName: String): CallGraph = {
-        val file = new File(s"./src/test/scala/resources/$fileName.scala")
-        val syntaxTree: Source = FileParser.toSyntaxTree(file)
-        createGraph(collectMethods(syntaxTree))
-    }
-
-    def graphFromString(code: String): CallGraph = {
-        val syntaxTree: Source = code.parse[Source].get
-        createGraph(collectMethods(syntaxTree))
-    }
 
     /** These helper methods cut way down on the line count of the tests */
     def existsInGraph(graph: CallGraph, name: String): Boolean = graph.nodes.exists(_.name == name)
@@ -210,7 +194,7 @@ class FilterTests extends AnyFlatSpec {
     }
 
     it should "remove nodes that are isolates (i.e. no neighbors, degree zero)" in {
-        val graph = graphFromFile("islands-test")
+        val graph = graphFromTestFile(s"./src/test/scala/resources/islands-test.scala")
         val graph2 = graph.transform(Transformers.removeIslands)
         println(s"graph=$graph")
         assert(graph.nodes.size == 4)

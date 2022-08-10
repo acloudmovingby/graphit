@@ -7,11 +7,6 @@ import CallGraph.CallGraph
 
 object GraphBuilder {
 
-    def buildGraph(files: Seq[File]): CallGraph = {
-        val methods = files.map(FileParser.toSyntaxTree).flatMap(collectMethods)
-        createGraph(methods)
-    }
-
     /**
      * It's just state information being passed in and out of recursive calls. As the depth-first search retreats back up
      * the AST, it needs to keep track of information that it has found while traversing lower levels?

@@ -28,12 +28,13 @@ class Graph[A]() {
     def size: Int = g.size
 
     def nodes: Set[A] = g.nodes.toOuter
+
     def edges: Set[(A, A)] = g.edges.map((e: ScalaXGraph[A, DiEdge]#EdgeT) => (e.toOuter.head, e.toOuter.tail.head)).toSet
 
     /** Keeps nodes matching the predicate */
     def filter(p: A => Boolean): Graph[A] = Graph.fromScalaX(g filter g.having(p(_)))
 
-    /** Simply applies f to the graph. Allows you to chain calls together along with filter. */
+    /** Simply applies f to the graph. Allows you to chain calls together along with filter */
     def transform[B](f: Graph[A] => Graph[B]): Graph[B] = f(this)
 
     def parentsOf(a: A): Seq[A] = g.get(a).diPredecessors.map(_.value).toSeq
