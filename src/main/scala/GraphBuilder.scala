@@ -12,9 +12,14 @@ object GraphBuilder {
         createGraph(methods)
     }
 
-    /** As the DFS search through the tree retreats back up to the higher levels, it needs to keep of information
-     * that it has found while traversing the lower levels.*/
-    case class RecurContainer(methods: List[MethodWithCallsites], callsites: List[CallSite]) {
+    /**
+     * It's just state information being passed in and out of recursive calls. As the depth-first search retreats back up
+     * the AST, it needs to keep track of information that it has found while traversing lower levels?
+     * */
+    case class RecurContainer(
+        methods: List[MethodWithCallsites],
+        callsites: List[CallSite]
+    ) {
         def ++(rc: RecurContainer): RecurContainer = {
             RecurContainer(
                 methods = this.methods ++ rc.methods,
@@ -27,6 +32,7 @@ object GraphBuilder {
         val empty: RecurContainer = RecurContainer(List.empty, List.empty)
     }
 
+    /** 3 months after I wrote this...I have no idea how this works */
     def collectMethods(tree: Source): List[MethodWithCallsites] = {
         def recur(context: Vector[String], tree: Tree): RecurContainer = {
 
@@ -99,4 +105,11 @@ case class MethodWithCallsites(
     callSites: List[CallSite] // calls to other methods within this method
 )
 
+/**
+ * These are examples of callsites.
+ *      foo.name(bar)
+ *      name(bar)
+ *      foo name bar
+ * @param name The name of the method/function called.
+ */
 case class CallSite(name: String)

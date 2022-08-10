@@ -6,9 +6,6 @@ object CallGraph {
     def nodeLabeller: Def => String = _.name
 }
 
-/**
- * "Method" is a slightly inaccurate name, as it really refers to any "def" found in the files
- */
 trait Def {
     val name: String
 }

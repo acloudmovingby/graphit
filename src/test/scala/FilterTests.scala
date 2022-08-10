@@ -225,7 +225,7 @@ class FilterTests extends AnyFlatSpec {
             List("A" ->"B", "B" ->"C", "C" ->"D") ++
                 List("X" ->"Y", "Y" ->"Z") ++
                 List("B" ->"Y", "Y" ->"D")
-        } map { case (src, target) => (UnknownDef(src), UnknownDef(target))} // For this test it's fine for them all to be Unknown
+        } map { case (src, target) => (UnknownDef(src), UnknownDef(target))} // At the time of making this test it's was fine for them all to be Unknown
         Graph.from(List.empty, edges)
     }
 
@@ -286,22 +286,6 @@ class FilterTests extends AnyFlatSpec {
         assert(afterExcludingB.size == 4)
         assert(shouldNotInclude(afterExcludingB, List("C", "D", "Y", "Z")))
     }
-/*
-    it should "remove descendants who have the excluded method as their unique and only shared ancestor" in {
-        val graph = graphForExcludeTests
-        assert(graph.size == 14) // 7 nodes + 7 edges
-        assert(graph.nodes.exists(_.name == "A")) // assert A exists first
-        val afterExcluding = graph.transform(Transformers.exclude(List("A")))
-        assert(afterExcluding.size == 7) // now 4 nodes + 3 edges
-        assert(! afterExcluding.nodes.exists(_.name == "A")) // A should no longer exist
-        assert(! afterExcluding.nodes.exists(_.name == "B")) // nor B
-        assert(! afterExcluding.nodes.exists(_.name == "C")) // nor C
-
-        val excludedB = graph.transform(Transformers.exclude(List("B")))
-        assert(excludedB.size == 8)
-        assert(! excludedB.nodes.exists(_.name == "B"))
-        assert(! excludedB.nodes.exists(_.name == "C"))
-    }*/
 
     behavior of "fileOnly"
 
@@ -313,7 +297,7 @@ class FilterTests extends AnyFlatSpec {
               |}
               |""".stripMargin)
         val graph2 = graph.filter(Filters.inFileOnly)
-        assert(graph.size == 3) // note: size is nodes + edges
+        assert(graph.size == 3) // note: size is nodes + edges, so 'Foo.foo -> ?.bar' is 3 things: node foo, node bar, and the edge between them
         assert(graph2.size == 1)
         assert(existsInGraph(graph2, "foo"))
     }

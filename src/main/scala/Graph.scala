@@ -12,9 +12,11 @@ import scalax.collection.io.dot._
  * that there will not be duplicate values entered in the graph, which gets away with all the nonsense with wrapper Node
  * objects and node indices and whatnot.
  *
- * The specs:
- * - directed edges, but not-weighted
- * - nodes (type A) must be unique and implement eq/hash
+ * To use:
+ * - has directed edges, but they're not weighted
+ * - Graph[A] means the node value is of type A. Node values must be unique and implement eq/hash. In other words,
+ *     you can make a Graph of Strings, with one node being "A" but not two.
+ * being A
  *
  * */
 class Graph[A]() {
