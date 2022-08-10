@@ -6,7 +6,7 @@ Written in Scala, for exploring large Scala codebases.
 ## Introduction
 
 ### Basic usage: the DOT format
-Let's say we've set up `graphit` on the command line (instructions below) and we run `graphit` on the Scala file `example1.scala` as follows:
+Let's say we've set up `graphit` on the command line (instructions [below](https://github.com/acloudmovingby/graphit/edit/main/README.md#how-to-install--use)) and we run `graphit` on the Scala file `example1.scala` as follows:
 ```sh
 graphit example1.scala
 ```
@@ -42,7 +42,7 @@ Note: Because this site is not affilated with graphit, be mindful of using it wi
 * You can exclude certain parts of the graph (see `--remove` and `--exclude` flags in help text). Accepts `*` as a wildcard. Useful for cleaning up large graphs, or for taking screenshots.
 * Currently explores defs, but I hope to include val in the future (see TODO section)
 * Ignores "nested" def's, (i.e. a def within a def), since those tend to just be helper methods. Maybe a flag could be added to turn that off, but I honestly didn't find it useful.
-* Run with `--help` to see more!
+* Run with `--help` to see more
 
 
 ## How to Install / Use:
@@ -85,7 +85,9 @@ This is just a random mix of ideas, probably shouldn't / won't do a lot of them:
 * Make flag to show all *parent* callers, up to a certain depth or something so it's reasonable to run on a huge codebase.
 * Same as the previous bullet point, but make flag to show all *descendants*, up to a certain depth.
 * Make output title of graph be file or directory names?
-* Improve efficiency when looking at large codebases by reading files and running algorithms in a more `online` way, i.e. not waiting to read all files and build the whole graph if a given flag command doesn't need it (???)
+* (probably not necessary) Possible ways to improve efficiency when reading large codebases:
+** As you read files, discard parts of the graph if they become unnecessary (for the feature/flag used)
+** As you read files, stop once the goal of the feature/flag has been achieved
 * (HARD) Make flag to group methods by their classes and/or files. In DOT format terms, I'd probably use the `subgraph` keyword to group methods that are all in the same class/object/trait. The trick is getting this to work
 * (MEDIUM) Same as previous bullet point, but instead of grouping all methods from a class in one box, I think it's easier to just color them. Perhaps different hues represent different files and shades of that hue represent different classes within that file??
 * **(HARD but arguably most important)** Make this actually use a compiler to check types rather than just using reflection and string equality (currently graphit cannot know the difference between two methods with the same name, e.g. it will think `ObjectA.foo()` is calling the same method as `ObjectB.foo()`. Heard that we'd possibly need to write my own compiler plugin. 
