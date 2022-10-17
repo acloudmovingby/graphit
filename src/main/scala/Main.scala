@@ -8,19 +8,19 @@ object Main extends App {
     // used scopt library below which has its documentation at github here: https://github.com/scopt/scopt
     // for the most part followed syntax described in that documentation
 
-    // Note that Config is the object that we mutate as each flag/argument is parsed
-    val builder = OParser.builder[Config]
+    // Note that ParsedArgs is the object that we mutate as each flag/argument is parsed
+    val builder = OParser.builder[ParsedArgs]
 
     val parser1 = {
         import builder._
         OParser.sequence(
             programName("graphit"),
             head("graphit", "0.1.0"),
-            // In each argument/option defined below, the action method modifies the Config
+            // In each argument/option defined below, the action method modifies the ParsedArgs
             arg[File]("<arg1>,<arg2>...")
                 .unbounded()
                 .minOccurs(1)
-                .action((root, c: Config) => c.copy(files = c.files ++ FileParser.collectScalaFiles(root)))
+                .action((root, c: ParsedArgs) => c.copy(files = c.files ++ FileParser.collectScalaFiles(root)))
                 .text("Args are absolute paths to *.scala' files or directories that contain *.scala' files (will search recursively).")
                 // at each flag/argument, you can validate that argument in isolation (e.g. is it a File?)
                 .validate(f =>
@@ -53,7 +53,7 @@ object Main extends App {
                 .text("Shows any paths between the two methods, i.e. is one a descendant call of the other."),
             note(sys.props("line.separator")),
             help("help").text("prints this usage text"),
-            // checkConfig checks for consistency of the whole Config (e.g. to prevent contradictory flags)
+            // checkConfig checks for consistency of the whole ParsedArgs (e.g. to prevent contradictory flags)
             checkConfig {
                 case c if c.files.isEmpty =>
                     failure("Must provide at least one .scala file, or directories containing at least one .scala file (directories searched recursively).")
@@ -64,7 +64,7 @@ object Main extends App {
 
     // This is where we actually run our parser on the args. If successful, returns Some(config) and we then run our
     // config with that config, which is hopefully in a valid state
-    OParser.parse(parser1, args, Config()) match {
+    OParser.parse(parser1, args, ParsedArgs()) match {
         case None => println(s"There was an error during parsing of the arguments. Sorry...")
         case Some(config) if config.web => config.generateProgram().runWeb()
         case Some(config) => config.generateProgram().run()

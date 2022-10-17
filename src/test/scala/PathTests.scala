@@ -1,5 +1,7 @@
 import org.scalatest.flatspec.AnyFlatSpec
 
+import graph.Graph
+
 class PathTests extends AnyFlatSpec {
 
     behavior of "path"

@@ -1,9 +1,9 @@
-import java.io.File
 import scala.annotation.tailrec
 import scala.meta.{Defn, Source, Term, Tree}
 import scala.collection.mutable.{Map => MutableMap}
 
-import CallGraph.CallGraph
+import graph.CallGraph.CallGraph
+import graph.{Def, DefinedDef, UnknownDef, Graph}
 
 object GraphBuilder {
 

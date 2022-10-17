@@ -1,9 +1,10 @@
 import scala.util.matching.Regex
 import scala.collection.mutable.Queue
 import scalax.collection.GraphTraversal.{BreadthFirst, DepthFirst}
-import scala.collection.mutable
 
-import CallGraph.CallGraph
+import scala.collection.mutable
+import graph.CallGraph.CallGraph
+import graph.{Def, DefinedDef, UnknownDef}
 
 object Filters {
 
@@ -31,6 +32,19 @@ object Filters {
         case _: DefinedDef => true
         case _: UnknownDef => false
     }
+
+    // an ordering of the various filters, haven't thought that much about the order in which they appear, but they're
+    // not commutative
+    def basicFilterSequence(
+        g: CallGraph,
+        removedMethods: List[String],
+        excludedMethods: List[String],
+        keepIslands: Boolean
+    ): CallGraph =
+        g.filter(Filters.remove(removedMethods))
+            .transform(Transformers.exclude(excludedMethods))
+            .filter(Filters.inFileOnly)
+            .transform(if (keepIslands) identity else Transformers.removeIslands)
 }
 
 /**

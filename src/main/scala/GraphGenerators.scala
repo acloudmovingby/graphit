@@ -1,4 +1,4 @@
-import CallGraph.CallGraph
+import graph.CallGraph.CallGraph
 import GraphBuilder.{collectMethods, createGraph}
 
 import java.io.File

@@ -1,5 +1,7 @@
 import org.scalatest.flatspec.AnyFlatSpec
 
+import graph.Graph
+
 class GraphTests extends AnyFlatSpec {
 
     /** Did these tests to sanity check myself after I saw some weird behavior after refactoring */

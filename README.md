@@ -100,6 +100,6 @@ This project was started by *acloudmovingby* who is a software engineer working 
 These are some great tools that help graphit work: 
 * [Scopt](https://github.com/scopt/scopt) to parse the arguments/flags
 * [Scalameta](https://scalameta.org/docs/trees/guide.html) to parse Scala code into abstract syntax trees (ASTs).
-* [Graphs for Scala](https://www.scala-graph.org/) (i.e. scalax) to handle graph operations. I (@acloudmovingby) used graph libraries in Rust, Java, and Scala, and I think this is my favorite so far. That being said, like all graph libraries, it's API is quite complex because graphs are very general mathematical structures. I had a lot of boilerplate scalax code in graphit and I knew it might discourage others/myself from contributing, so I made a light wrapper Graph class around the scalax library. Might discard the scalax library entirely in the future.
+* [Graphs for Scala](https://www.scala-graph.org/) (i.e. scalax) to handle graph operations. I (@acloudmovingby) used graph libraries in Rust, Java, and Scala, and I think this is my favorite so far. That being said, like all graph libraries, it's API is quite complex because graphs are very general mathematical structures. I had a lot of boilerplate scalax code in graphit and I knew it might discourage others/myself from contributing, so I made a light wrapper graph.Graph class around the scalax library. Might discard the scalax library entirely in the future.
 
 

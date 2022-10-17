@@ -1,21 +1,19 @@
-import scalax.collection.{Graph => ScalaXGraph}
+package graph
+
 import scalax.collection.GraphEdge._
 import scalax.collection.GraphPredef._
 import scalax.collection.io.dot._
+import scalax.collection.{Graph => ScalaXGraph}
 
 /**
  * A more ergonomic wrapper around the open source graph library (scalax) beecause I got tired of copying the same scalax
- * boilerplate everywhere. Graph libraries tend to have complex APIs due to the fact that 'graph' is encompasses a wide variety of structures (multigraphs,
- * hypergraphs, etc.) all with their own constraints and implementation details and forcing it all into one type is a bit ridiculous.
- *
- * Will anyone ever read these comments? Maybe? Well, if you care, one reason I can simplify the API greatly is that I know
- * that there will not be duplicate values entered in the graph, which gets away with all the nonsense with wrapper Node
- * objects and node indices and whatnot.
+ * boilerplate everywhere. I know that there will not be duplicate values entered in the graph, which makes the graph
+ * API much simpler.
  *
  * To use:
  * - has directed edges, but they're not weighted
- * - Graph[A] means the node value is of type A. Node values must be unique and implement eq/hash. In other words,
- *     you can make a Graph of Strings, with one node being "A" but not two.
+ * - graph.Graph[A] means the node value is of type A. Node values must be unique and implement eq/hash. In other words,
+ *     you can make a graph.Graph of Strings, with one node being "A" but not two.
  * being A
  *
  * */
@@ -34,8 +32,13 @@ class Graph[A]() {
     /** Keeps nodes matching the predicate */
     def filter(p: A => Boolean): Graph[A] = Graph.fromScalaX(g filter g.having(p(_)))
 
+    def find(p: A => Boolean): Option[A] = g.nodes.find(n => p(n.value)).map(_.toOuter)
+
     /** Simply applies f to the graph. Allows you to chain calls together along with filter */
     def transform[B](f: Graph[A] => Graph[B]): Graph[B] = f(this)
+
+    def map[B](f: A => B): Graph[B] =
+        Graph.from(this.nodes.map(f(_)).toSeq, this.edges.map(e => (f(e._1), f(e._2))).toSeq)
 
     def parentsOf(a: A): Seq[A] = g.get(a).diPredecessors.map(_.value).toSeq
 
@@ -44,7 +47,7 @@ class Graph[A]() {
     def -(a: A): Graph[A] = Graph.fromScalaX(g - a)
 
     override def equals(obj: Any): Boolean = obj match {
-        case gr: Graph[_] => nodes.equals(gr.nodes) && edges.equals(gr.edges)
+        case gr: Graph[_] => nodes.toSet.equals(gr.nodes.toSet) && edges.toSet.equals(gr.edges.toSet)
         case _ => false
     }
 
@@ -75,10 +78,14 @@ class Graph[A]() {
 }
 
 object Graph {
+    def empty[A](): Graph[A] = from(Seq.empty, Seq.empty)
+
     def from[A](nodes: Seq[A], edges: Seq[(A, A)]): Graph[A] = fromScalaX(
         ScalaXGraph.from(nodes, edges.map { case (a, b) => a ~> b})
     )
 
+    // After I use the operations provided by the library's graph, I then put my wrapper around it
+    // this wrapper graph.Graph clas is a little silly, I should probably just implement this myself
     def fromScalaX[A](g: ScalaXGraph[A,DiEdge]): Graph[A] = {
         val graph = new Graph[A]
         graph.g = g
