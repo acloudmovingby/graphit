@@ -33,8 +33,8 @@ object Filters {
         case _: UnknownDef => false
     }
 
-    // an ordering of the various filters, haven't thought that much about the order in which they appear, but they're
-    // not commutative
+    // an ordering of the various filters, haven't thought that much about the order in which they take affect, but
+    // it will matter (they're not commutative)
     def basicFilterSequence(
         g: CallGraph,
         removedMethods: List[String],
