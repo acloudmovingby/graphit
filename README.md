@@ -1,7 +1,5 @@
 # graphit
-A command line tool to extract and visualize call graphs from Scala source code. 
-
-Written in Scala, for exploring large Scala codebases.
+A command line tool to extract and visualize call graphs from Scala source code.
 
 ## Introduction
 
@@ -21,7 +19,7 @@ digraph graphit {
 ```
 Each arrow (`A -> B`) indicates that within the code block of function/method `A`, there is a call to function/method `B`. If you look at the example file [here](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.scala), you'll see that the method `sendMessage` makes a call to the method `sendRequest`, which in turn makes a call to `getClient` and so on. 
 
-This so-called 'call graph' of the code, is represented in the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language), a standardized way to represent graph data structures. The `graphit` user can then pipe the above output to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
+This 'call graph' of the code, is represented in the [DOT format](https://en.wikipedia.org/wiki/DOT_graph_description_language), a standard for representing graphs. This can then be piped to other CLI programs that rely on this format, such as [Graphviz](https://graphviz.org/). 
 
 ### Visualizing the graph
 But wait...seeing a graph as text still feels a little unintuitive. It would be *way* cooler to see it visually (and immediately)! So let's run graphit with the `--web` flag:
@@ -32,9 +30,7 @@ This then opens the following image in your browser:
 
 ![Visualization of the call graph of a Scala file](https://github.com/acloudmovingby/graphit/blob/main/examples/example1.png?raw=true)
 
-Neat! What graphit is doing here is sending your graph information to an open-source site called GraphvizOnline ([site](https://dreampuf.github.io/GraphvizOnline/), [github](https://github.com/dreampuf/GraphvizOnline)). The site automatically runs the Graphviz CLI program mentioned above, but does it in the browser.
-
-Note: Because this site is not affilated with graphit, be mindful of using it with confidential source code. To be honest, though, it's highly unlikely anyone is using that site to skim production code call graphs from Scala programmers...
+Graphit is sending your graph information to the open-source site GraphvizOnline ([site](https://dreampuf.github.io/GraphvizOnline/), [github](https://github.com/dreampuf/GraphvizOnline)). The site automatically runs Graphviz in the browser.
 
 ### Other Stuff Graphit Can Do
 
@@ -49,7 +45,7 @@ Note: Because this site is not affilated with graphit, be mindful of using it wi
 You need to have sbt installed.
 
 ### Option 1: sbt shell
-This is probably the best way (meaning, it will work), but it's a little more clunky. If you're familiar with sbt, this should be pretty straightforward:
+Probably the most reliable way. If you're familiar with sbt, this should be pretty straightforward:
 1. clone repo
 2. start sbt shell by running `sbt`
 3. Enter `run` followed by the args/flags
