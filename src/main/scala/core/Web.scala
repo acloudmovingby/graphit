@@ -1,3 +1,5 @@
+package core
+
 import java.net.URLEncoder
 import sys.process._
 

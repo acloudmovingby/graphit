@@ -1,6 +1,8 @@
 import org.scalatest.flatspec.AnyFlatSpec
+
 import graph.CallGraph.CallGraph
-import GraphGenerators.{graphFromString, graphFromTestFile}
+import core.{Filters, Transformers}
+import core.GraphGenerators.{graphFromString, graphFromTestFile}
 import graph.{DefinedDef, UnknownDef, Graph}
 
 class FilterTests extends AnyFlatSpec {

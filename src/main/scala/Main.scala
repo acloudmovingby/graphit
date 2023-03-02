@@ -1,8 +1,8 @@
+import core.{Ancestors, FileParser, Files, Filters, GraphGenerators, Web}
 import graph.CallGraph
 
 import java.io.File
 import scala.language.postfixOps
-import scala.meta._
 import scopt.OParser
 
 object Main extends App {

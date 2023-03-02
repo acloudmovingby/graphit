@@ -1,5 +1,5 @@
 import org.scalatest.flatspec.AnyFlatSpec
-import GraphGenerators.graphFromString
+import core.GraphGenerators.graphFromString
 import graph.{Def, DefinedDef, UnknownDef, Graph}
 
 class GraphBuilderTests extends AnyFlatSpec {

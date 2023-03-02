@@ -1,21 +1,21 @@
-import graph.{CallGraph, Def, Graph}
-import graph.CallGraph.CallGraph
+package core
 
 import java.io.File
+
+import graph.{CallGraph, Def, Graph}
+import graph.CallGraph.CallGraph
 
 trait ScalaSource
 case class Files(files: Seq[File]) extends ScalaSource
 case class StringLiteral(str: String) extends ScalaSource
 
+/** Not implemented yet */
 case class Path(
     code: ScalaSource,
     def1: String,
     def2: String
 ) {
-    def generateDot(): String = {
-        GraphGenerators.graphFromSource(code)
-            .toDot("graphit", CallGraph.nodeLabeller)
-    }
+    def generateDot(): String = ???
 }
 
 object Ancestors {
