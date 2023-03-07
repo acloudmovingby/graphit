@@ -1,3 +1,5 @@
+package core
+
 import graph.CallGraph.CallGraph
 import GraphBuilder.{collectMethods, createGraph}
 

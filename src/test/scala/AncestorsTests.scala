@@ -1,6 +1,8 @@
+import core.{StringLiteral, Ancestors}
 import graph.CallGraph.CallGraph
-import org.scalatest.flatspec.AnyFlatSpec
 import graph.{CallGraph, Graph}
+
+import org.scalatest.flatspec.AnyFlatSpec
 
 class AncestorsTests extends AnyFlatSpec {
     behavior of "Ancestors flag"

@@ -1,3 +1,5 @@
+package core
+
 import scala.annotation.tailrec
 import scala.meta.{Defn, Source, Term, Tree}
 import scala.collection.mutable.{Map => MutableMap}

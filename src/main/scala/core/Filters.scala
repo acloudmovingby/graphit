@@ -1,3 +1,5 @@
+package core
+
 import scala.util.matching.Regex
 import scala.collection.mutable.Queue
 import scalax.collection.GraphTraversal.{BreadthFirst, DepthFirst}
