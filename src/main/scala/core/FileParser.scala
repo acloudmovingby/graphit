@@ -20,11 +20,12 @@ object FileParser {
     }
 
     def collectScalaFiles(root: File): Seq[File] = {
-        def getFiles(theRoot: File, extensions: Seq[String]): List[File] = {
+        println(s"class name is: ${this.getClass.getName}")
+        def getFiles(theRoot: File, suffix: Seq[String]): List[File] = {
             Option(theRoot) match {
-                case Some(f) if f.isFile && extensions.exists(f.getName.endsWith(_)) => List(f)
+                case Some(f) if f.isFile && suffix.exists(f.getName.endsWith(_)) => List(f)
                 case Some(d) if d.isDirectory =>
-                    d.listFiles().toList.flatMap(child => getFiles(child, extensions))
+                    d.listFiles().toList.flatMap(child => getFiles(child, suffix))
                 case _ => Nil
             }
         }

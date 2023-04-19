@@ -46,6 +46,8 @@ class Graph[A]() {
 
     def -(a: A): Graph[A] = Graph.fromScalaX(g - a)
 
+    def ++(other: Graph[A]): Graph[A] = Graph.fromScalaX(g ++ other.g)
+
     override def equals(obj: Any): Boolean = obj match {
         case gr: Graph[_] => nodes.toSet.equals(gr.nodes.toSet) && edges.toSet.equals(gr.edges.toSet)
         case _ => false

@@ -18,13 +18,16 @@ case class Program(
     removedMethods: List[String] = List.empty,
     excludedMethods: List[String] = List.empty,
     keepIslands: Boolean = true,
-    ancestorRoot: Option[String] = None
+    ancestorRoot: Option[String] = None,
+    ancestorFile: Option[String] = None,
+    ancestorDepth: Option[Int] = None
 ) {
 
     def run(): Unit = {
-        val graph = ancestorRoot match {
-            case None => GraphGenerators.graphFromSource(Files(files))
-            case Some(root) => Ancestors.ancestors(Files(files), root)
+        val graph = (ancestorRoot, ancestorDepth) match {
+            case (None, _) => GraphGenerators.graphFromSource(Files(files))
+            case (Some(root), Some(depth)) => Ancestors.ancestors(Files(files), Seq(root), depth)
+            case (Some(root), None) => Ancestors.ancestors(Files(files), Seq(root))
         }
         val dot = Filters.basicFilterSequence(graph, removedMethods, excludedMethods, keepIslands)
             .toDot("graphit", CallGraph.nodeLabeller)
@@ -61,7 +64,7 @@ object ArgParser {
                     .unbounded()
                     .optional()
                     .action((pattern, c) => c.copy(removedMethods = c.removedMethods ++ pattern))
-                    .text("""If s1 is "foo", then this removes from the final graph any methods named "foo", or methods which live in a class/object/trait named "foo". Accepts the `*` character as wildcard. Also see -e/--exclude."""),
+                    .text("""If s1 is "foo", then this removes from the final graph any defs named "foo", or defs which live in a class/object/trait named "foo". Accepts the `*` character as wildcard. Also see -e/--exclude."""),
                 opt[Seq[String]]('e', "exclude")
                     .valueName("<s1>,<s2>...")
                     .unbounded()
@@ -71,7 +74,7 @@ object ArgParser {
                 opt[Unit]("no-islands")
                     .optional()
                     .action((_, c) => c.copy(keepIslands = false))
-                    .text("""Removes any `isolates` from the graph, i.e. methods which neither (1) make calls to other methods, nor (2) are called by other methods (within the file searched)."""),
+                    .text("""Removes any `isolates` from the graph, i.e. defs which neither (1) make calls to other defs, nor (2) are called by other defs (within the file searched)."""),
                 opt[Unit]('w',"web")
                     .action((_, c) => c.copy(web = true))
                     .text("Opens the website GraphvizOnline (https://github.com/dreampuf/GraphvizOnline) to show a visualization of your graph. Graphit is unaffiliated with ."),
@@ -79,12 +82,20 @@ object ArgParser {
                     .optional()
                     .validate(f =>
                         if (f.size == 2) success
-                        else failure("Path flag requires exactly two scala def's. For example, 'graphit -c getId fetchIds <dir>' searches the given directory to find any method/function named 'getId' and 'fetchIds', and then shows all paths between those two methods."))
-                    .text("Shows any paths between the two methods, i.e. is one a descendant call of the other."),
+                        else failure("Path flag requires exactly two scala def's. For example, 'graphit -c getId fetchIds <dir>' searches the given directory to find any def named 'getId' and 'fetchIds', and then shows all paths between those two defs."))
+                    .text("Shows any paths between the two defs, i.e. is one a descendant call of the other."),
                 opt[String]('a', "ancestors")
                     .optional()
                     .action((pattern, c) => c.copy(ancestorRoot = Some(pattern)))
                     .text("Show the defs that lead this def being called (the callers higher up in the calling hierarchy."),
+                opt[String]('f', "root-file")
+                    .optional()
+                    .action((pattern, c) => c.copy(ancestorFile = Some(pattern)))
+                    .text("The file where the root is located (for ancestor search)."),
+                opt[Int]('d', "depth")
+                    .optional()
+                    .action((pattern, c) => c.copy(ancestorDepth = Some(pattern)))
+                    .text("How far up in the call tree"),
                 note(sys.props("line.separator")),
                 help("help").text("prints this usage text"),
                 // checkConfig checks for consistency of the whole Program (e.g. to prevent contradictory flags)

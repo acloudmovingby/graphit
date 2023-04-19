@@ -196,7 +196,7 @@ class FilterTests extends AnyFlatSpec {
     }
 
     it should "remove nodes that are isolates (i.e. no neighbors, degree zero)" in {
-        val graph = graphFromTestFile(s"./src/test/scala/resources/islands-test.scala")
+        val graph = graphFromTestFile(s"./src/test/resources/islands-test.scala")
         val graph2 = graph.transform(Transformers.removeIslands)
         assert(graph.nodes.size == 4)
         assert(graph2.nodes.size == 3)

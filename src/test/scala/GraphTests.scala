@@ -43,4 +43,22 @@ class GraphTests extends AnyFlatSpec {
         val g2 = Graph.from(List("A", "B"), List.empty)
         assert(g1 != g2)
     }
+
+    behavior of "++"
+
+    it should "be able to handle empty graphs" in {
+        assert(Graph.empty() == (Graph.empty() ++ Graph.empty()))
+
+        val g1 = Graph.from(List("A", "B"), List(("A", "B")))
+        assert(g1 == (g1 ++ Graph.empty()))
+        assert((Graph.empty() ++ g1) == g1)
+    }
+
+    it should "return union of all nodes/edges" in {
+        val g1 = Graph.from(List("A", "B"), List(("A", "B")))
+        val g2 = Graph.from(List("A", "B", "C"), List(("B", "C")))
+        val result = g1 ++ g2
+        val expResult = Graph.from(List("A", "B", "C"), List(("A", "B"), ("B", "C")))
+        assert(result == expResult)
+    }
 }

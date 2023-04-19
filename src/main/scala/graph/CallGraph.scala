@@ -27,5 +27,4 @@ case class UnknownDef(name: String) extends Def
 case class DefinedDef(
     name: String,
     parents: Vector[String]
-    // TODO: file name?
 ) extends Def

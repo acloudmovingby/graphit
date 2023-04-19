@@ -14,7 +14,7 @@ object GraphBuilder {
      * the AST, it needs to keep track of information that it has found while traversing lower levels?
      * */
     case class RecurContainer(
-        methods: List[MethodWithCallsites],
+        methods: List[DefWithCallsites],
         callsites: List[CallSite]
     ) {
         def ++(rc: RecurContainer): RecurContainer = {
@@ -29,8 +29,14 @@ object GraphBuilder {
         val empty: RecurContainer = RecurContainer(List.empty, List.empty)
     }
 
-    /** 3 months after I wrote this...I have no idea how this works */
-    def collectMethods(tree: Source): List[MethodWithCallsites] = {
+    def collectDefs(tree: Source): List[DefWithCallsites] = collectDefs(None, tree)
+
+    /** Recursively searches the syntax tree, looking for two main things: (1) any def declarations and (2) any
+     * callsites in the subtree formed by that declaration (i.e. in this def, which other defs are called?) These
+     * are put stored as a DefWithCallsites which can be further processed to build the call graph  */
+    def collectDefs(fileName: Option[String], tree: Source): List[DefWithCallsites] = {
+        val mentionFile = fileName.map(f => s" in $f").getOrElse("")
+
         def recur(context: Vector[String], tree: Tree): RecurContainer = {
 
             def recurOnChildren(context: Vector[String], children: List[Tree]): RecurContainer =
@@ -39,18 +45,19 @@ object GraphBuilder {
                     .fold(RecurContainer.empty)(_ ++ _)
 
             @tailrec
-            def getCallSiteName(termApply: Term.Apply): String = termApply.fun match {
-                case s: Term.Select => s.name.value // x.methodName(...)
+            def getCallSiteName(termApply: Term): String = termApply match {
+                case s: Term.Select => getCallSiteName(s.name) // x.methodName(...)
                 case n: Term.Name => n.value // methodName(...)
                 case a: Term.ApplyType => a.fun match {
                     // a little silly to repeat what's above, but the Scalameta types make it awkward to avoid that
                     case s: Term.Select => s.name.value // x.methodName(...)
                     case n: Term.Name => n.value // methodName(...)
+                    case _ => println(s"AST parsing error$mentionFile: unclear type for fun of the Term.ApplyType: type=${a.fun.getClass.getTypeName} fun=${a.fun}"); "???"
                 }
-                case ta: Term.Apply => getCallSiteName(ta)
+                case ta: Term.Apply => getCallSiteName(ta.fun)
                 case other => {
-                    println(s"hmmm... didn't expect that a Term.Apply had something else in it. The 'fun' attribute in the Term.Apply is: $other whose type is ${other.getClass}")
-                    "uhhhh, what?"
+                    println(s"AST parsing error$mentionFile: unexpected term type: ${other.getClass}, term=$other")
+                    ""
                 }
             }
 
@@ -58,12 +65,13 @@ object GraphBuilder {
                 case method: Defn.Def =>
                     val recurResult = recurOnChildren(context :+ method.name.value, method.children)
                     // maybe useful later?: val position = (method.pos.start, method.pos.end)
-                    val newMethod = MethodWithCallsites(
+                    val newMethod = DefWithCallsites(
                         DefinedDef(method.name.value, context),
                         recurResult.callsites.distinct)
                     RecurContainer(recurResult.methods ++ List(newMethod), List.empty)
                 case callSite: Term.Apply =>
                     val methodName = getCallSiteName(callSite)
+                    if (methodName == "") println(s"AST parsing error$mentionFile: no name found for Term.Apply: $callSite")
                     RecurContainer(List.empty, List(CallSite(methodName))) ++ recurOnChildren(context, callSite.children)
                 case obj: Defn.Object => recurOnChildren(context :+ obj.name.value, obj.children)
                 case c: Defn.Class => recurOnChildren(context :+ c.name.value, c.children)
@@ -75,15 +83,15 @@ object GraphBuilder {
         recur(Vector.empty, tree).methods
     }
 
-    def createGraph(methods: Seq[MethodWithCallsites]): CallGraph = {
-        val immutMap = methods.map(_.method).groupBy(m => m.name)
+    def createGraph(defs: Seq[DefWithCallsites]): CallGraph = {
+        val immutMap = defs.map(_.theDef).groupBy(m => m.name)
         val nameMap: MutableMap[String, Seq[Def]] = MutableMap(immutMap.toSeq: _*)
-        val edges = methods.flatMap { mc =>
+        val edges = defs.flatMap { mc =>
             mc.callSites.flatMap { c =>
                 if (!nameMap.contains(c.name)) {
                     nameMap.put(c.name, Seq(UnknownDef(c.name)))
                 }
-                nameMap.get(c.name).get.map((mc.method, _)) // TODO avoid using .get here
+                nameMap.get(c.name).get.map((mc.theDef, _)) // TODO avoid using .get here
             }
         }
 
@@ -97,9 +105,9 @@ object TestHelper {
     var shouldPrint: Boolean = false
 }
 
-case class MethodWithCallsites(
-    method: Def,
-    callSites: List[CallSite] // calls to other methods within this method
+case class DefWithCallsites(
+    theDef: Def,
+    callSites: List[CallSite] // calls to other things within this def
 )
 
 /**

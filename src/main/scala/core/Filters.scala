@@ -70,7 +70,7 @@ object Transformers {
                 val head = queue.dequeue()
                 // we do two things: (1) remove the method that is the head of the queue,
                 // then, (2) any children of that method with no other parents get added to the queue (and later will be removed as well)
-                queue = queue ++ g.childrenOf(head) // children
+                queue = queue ++ g.childrenOf(head) // add children
                     .filter(g.parentsOf(_).size == 1) // that only have one parent
                 g = g - head
             }

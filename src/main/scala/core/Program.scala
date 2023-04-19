@@ -20,29 +20,30 @@ case class Path(
 
 object Ancestors {
 
-    def ancestors(scalaSource: ScalaSource, rootName: String): CallGraph = {
+    def ancestors(scalaSource: ScalaSource, rootDefs: Seq[String]): CallGraph = ancestors(scalaSource, rootDefs, Int.MaxValue)
+
+    def ancestors(scalaSource: ScalaSource, rootDefs: Seq[String], depth: Int): CallGraph = {
 
         val graph: CallGraph = GraphGenerators.graphFromSource(scalaSource)
-
-        val rootNode: Option[Def] = graph.find(_.name == rootName)
+        val rootNodes: Set[Def] = graph.nodes.filter(node => rootDefs.contains(node.name))
 
         var visited: Set[Def] = Set.empty[Def]
-        def parentsBFS(graph: CallGraph, root: Def): Set[String] = {
-            visited = visited + root
-            val recurOnParents: Set[String] = graph
-                .parentsOf(root).toSet
-                .diff(visited)
-                .flatMap(parentsBFS(graph, _))
 
-            recurOnParents + root.name
+        def parentsBFS(graph: CallGraph, roots: Set[Def], depth: Int): Set[String] = {
+            visited = visited ++ roots
+            def recurOnParents: Set[String] = {
+                val parents = roots.flatMap(graph.parentsOf)
+                val notYetVisited = parents.diff(visited)
+                parentsBFS(graph, notYetVisited, depth - 1)
+            }
+
+            if (depth > 0) recurOnParents ++ roots.map(_.name) else roots.map(_.name)
         }
 
-        rootNode match {
-            case None => Graph.empty()
-            case Some(rootDef: Def) =>
-                val allAncestorNames: Set[String] = parentsBFS(graph, rootDef)
-                val temp = graph.filter(node => allAncestorNames.contains(node.name))
-                temp
+        if (rootNodes.isEmpty) Graph.empty() else {
+            val allAncestorNames: Set[String] = parentsBFS(graph, rootNodes, depth)
+            val temp = graph.filter(node => allAncestorNames.contains(node.name))
+            temp
         }
     }
 

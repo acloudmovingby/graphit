@@ -17,15 +17,17 @@ name := "graphit"
 organization := "chrisoates"
 version := "1.0"
 
+scalacOptions ++= Seq("-deprecation", "-feature")
+unmanagedSources/excludeFilter := "islands-test.scala"
+
+fork := true
+
 // Note, it's not required for you to define these three settings. These are
 // mostly only necessary if you intend to publish your library's binaries on a
 // place like Sonatype.
 
-unmanagedSources/excludeFilter := "islands-test.scala"
-
 // Want to use a published library in your project?
 // You can define other libraries as dependencies in your build like this:]
-
 
 libraryDependencies += "org.scalameta" %% "scalameta" % "4.5.3"
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1"
@@ -34,6 +36,7 @@ libraryDependencies += "org.scala-graph" %% "graph-core" % "1.13.4"
 libraryDependencies += "org.scala-graph" %% "graph-dot" % "1.13.3"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.12"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.12" % "test"
+libraryDependencies += "dev.zio" %% "zio" % "2.0.9"
 
 // Helps "sbt assembly" work somehow...
 assemblyMergeStrategy in assembly := {
