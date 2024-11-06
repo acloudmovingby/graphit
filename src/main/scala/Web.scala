@@ -6,6 +6,7 @@ object Web {
         val encoded = URLEncoder.encode(dot,"UTF-8").replace("+", "%20").replace("+", "%20")
         val url = s"https://dreampuf.github.io/GraphvizOnline/#$encoded"
         val bash = """open """ + url
+        println(bash)
         bash.! // runs bash command
     }
 }
